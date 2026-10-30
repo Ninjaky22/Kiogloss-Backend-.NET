@@ -1,0 +1,45 @@
+# Local stack: PostgreSQL (with the schema Hibernate created) + the .NET API on :8000.
+#   cp .env.example .env   # fill in the secrets (same values as the Spring application.properties)
+#   docker compose up -d --build
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: store
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-1234}
+    ports:
+      - "5432:5432"
+    volumes:
+      - kiogloss-db:/var/lib/postgresql/data
+      # only applied the first time the volume is created (empty database)
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d store"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      ConnectionStrings__Default: "Host=db;Port=5432;Database=store;Username=postgres;Password=${DB_PASSWORD:-1234}"
+      Jwt__Secret: ${JWT_SECRET:?set JWT_SECRET in .env (same value as jwt.secret in Spring)}
+      Jwt__AccessTokenExpiration: ${JWT_ACCESS_EXPIRATION_MS:-300000}
+      Cloudinary__CloudName: ${CLOUDINARY_CLOUD_NAME:-dqxq7tupx}
+      Cloudinary__ApiKey: ${CLOUDINARY_API_KEY:-}
+      Cloudinary__ApiSecret: ${CLOUDINARY_API_SECRET:-}
+      Mail__Username: ${MAIL_USERNAME:-}
+      Mail__Password: ${MAIL_PASSWORD:-}
+      App__FrontendUrl: ${FRONTEND_URL:-http://localhost:5173}
+      TZ: ${TZ_NAME:-America/Bogota}
+    volumes:
+      - ./uploads:/app/uploads
+
+volumes:
+  kiogloss-db:

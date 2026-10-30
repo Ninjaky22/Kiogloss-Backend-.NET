@@ -1,0 +1,14 @@
+bin/
+obj/
+*.user
+.vs/
+.idea/
+.vscode/
+TestResults/
+# Local secrets (copied from the Spring application.properties) — never commit
+src/Kiogloss.Api/appsettings.Local.json
+uploads/
+tests/parity/parity-report.json
+.env
+tests/e2e/node_modules/
+tests/e2e/shots/

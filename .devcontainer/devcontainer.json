@@ -1,0 +1,18 @@
+{
+  // VS Code "Dev Containers": .NET 10 SDK without installing it on the host.
+  // Start the database first (docker compose up -d db). With host networking the container sees
+  // localhost:5432 (PostgreSQL) and the API it runs is reachable at http://localhost:8000.
+  "name": "Kiogloss Backend (.NET 10)",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:10.0",
+  "runArgs": ["--network=host"],
+  "containerEnv": {
+    "TZ": "America/Bogota",
+    "ConnectionStrings__Default": "Host=localhost;Port=5432;Database=store;Username=postgres;Password=1234"
+  },
+  "postCreateCommand": "dotnet restore Kiogloss.sln",
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-dotnettools.csdevkit", "ms-dotnettools.csharp"]
+    }
+  }
+}
