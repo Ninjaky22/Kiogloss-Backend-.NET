@@ -2,12 +2,18 @@ using Kiogloss.Api.Compat;
 
 namespace Kiogloss.Api.Models;
 
+/// <summary>Etapas por las que pasa un pedido. Los nombres en español ("Pendiente", "Enviado"...) son los que se guardan y se ven en pantalla.</summary>
 public enum OrderStatus
 {
+    /// <summary>Pedido recién hecho (etapa inicial).</summary>
     PENDING,
+    /// <summary>En preparación.</summary>
     PROCESSING,
+    /// <summary>Enviado al cliente.</summary>
     SHIPPED,
+    /// <summary>Entregado.</summary>
     DELIVERED,
+    /// <summary>Cancelado.</summary>
     CANCELLED,
 }
 

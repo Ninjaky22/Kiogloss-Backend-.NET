@@ -1,3 +1,8 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Revisa que los datos recibidos sean correctos: campo obligatorio, correo bien escrito, largo máximo...
+// Si algo no cumple, se rechaza antes de hacer cualquier cosa.
+// ======================================
+
 using System.Collections;
 using System.Reflection;
 using System.Text;

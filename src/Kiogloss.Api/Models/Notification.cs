@@ -1,6 +1,6 @@
 namespace Kiogloss.Api.Models;
 
-/// <summary>store_notification.</summary>
+/// <summary>Aviso guardado para un usuario o para los administradores. Tabla: store_notification.</summary>
 public class Notification
 {
     public long Id { get; set; }

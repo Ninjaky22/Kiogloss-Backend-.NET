@@ -1,3 +1,7 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Lo mismo que Dtos.cs pero para el panel de administración (productos, usuarios, pedidos, estadísticas).
+// ======================================
+
 using System.Text.Json.Serialization;
 using Kiogloss.Api.Compat;
 
@@ -33,10 +37,10 @@ public sealed class ProductVariantRequestDTO
 
 public sealed class ProductCreateRequest
 {
-    [NotBlank] [JsonPropertyName("title")] public string? Title { get; set; }
-    [NotNull] [JsonPropertyName("price")] public decimal? Price { get; set; }
-    [NotBlank] [JsonPropertyName("description")] public string? Description { get; set; }
-    [NotBlank] [JsonPropertyName("slug")] public string? Slug { get; set; }
+    [NotBlank][JsonPropertyName("title")] public string? Title { get; set; }
+    [NotNull][JsonPropertyName("price")] public decimal? Price { get; set; }
+    [NotBlank][JsonPropertyName("description")] public string? Description { get; set; }
+    [NotBlank][JsonPropertyName("slug")] public string? Slug { get; set; }
     /// <summary>"draft" o "published"</summary>
     [JsonPropertyName("status")] public string? Status { get; set; }
     /// <summary>Used when no variants are provided (default variant)</summary>
@@ -61,14 +65,14 @@ public sealed class ProductUpdateRequest
 
 public sealed class ProductImageUploadRequest
 {
-    [NotNull] [JsonPropertyName("productId")] public long? ProductId { get; set; }
+    [NotNull][JsonPropertyName("productId")] public long? ProductId { get; set; }
     /// <summary>Imagen en Base64</summary>
-    [NotBlank] [JsonPropertyName("imageBase64")] public string? ImageBase64 { get; set; }
+    [NotBlank][JsonPropertyName("imageBase64")] public string? ImageBase64 { get; set; }
 }
 
 public sealed class TagCreateRequest
 {
-    [NotBlank] [JsonPropertyName("name")] public string? Name { get; set; }
+    [NotBlank][JsonPropertyName("name")] public string? Name { get; set; }
     [JsonPropertyName("imageURL")] public string? ImageURL { get; set; }
 }
 

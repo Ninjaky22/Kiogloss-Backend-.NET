@@ -1,3 +1,8 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Los tipos de error que usa el sistema: "no se encontró", "dato inválido", "sin permiso", etc.
+// Cuando algo sale mal, el código lanza uno de estos errores y el sistema lo convierte en un mensaje claro para el usuario.
+// ======================================
+
 namespace Kiogloss.Api.Compat;
 
 /// <summary>

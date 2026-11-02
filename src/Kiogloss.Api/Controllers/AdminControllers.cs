@@ -1,3 +1,9 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Direcciones (rutas) que solo puede usar un administrador: /admin/...
+// Sirven para manejar productos, etiquetas, usuarios, pedidos, videos y reportes.
+// Estos archivos solo reciben la petición y responden. Las reglas del negocio están en la carpeta Services.
+// ======================================
+
 using Kiogloss.Api.Compat;
 using Kiogloss.Api.Dtos;
 using Kiogloss.Api.Dtos.Admin;
@@ -24,6 +30,7 @@ public sealed class AdminController(
 
     // ==================== FILE UPLOAD ====================
 
+    /// <summary>POST /admin/upload - Sube un archivo y devuelve su URL pública.</summary>
     [HttpPost("upload")]
     public async Task<IActionResult> UploadFile()
     {
@@ -39,6 +46,7 @@ public sealed class AdminController(
 
     // ==================== PRODUCT ENDPOINTS ====================
 
+    /// <summary>POST /admin/products - Crea un producto con sus variantes e imágenes.</summary>
     [HttpPost("products")]
     public async Task<IActionResult> CreateProduct()
     {
@@ -48,6 +56,7 @@ public sealed class AdminController(
         return Json(await adminService.CreateProduct(request), 201);
     }
 
+    /// <summary>GET /admin/products - Lista paginada de productos (búsqueda opcional con `search`).</summary>
     [HttpGet("products")]
     public async Task<IActionResult> GetAllProducts()
     {
@@ -58,9 +67,11 @@ public sealed class AdminController(
         return Json(await adminService.GetAllProducts(search, pageable));
     }
 
+    /// <summary>GET /admin/products/{id} - Obtiene un producto por id.</summary>
     [HttpGet("products/{id}")]
     public async Task<IActionResult> GetProductById(string id) => Json(await adminService.GetProductById(PathLong("id", id)));
 
+    /// <summary>PUT /admin/products/{id} - Actualiza un producto existente.</summary>
     [HttpPut("products/{id}")]
     public async Task<IActionResult> UpdateProduct(string id)
     {
@@ -71,6 +82,7 @@ public sealed class AdminController(
         return Json(await adminService.UpdateProduct(productId, request));
     }
 
+    /// <summary>DELETE /admin/products/{id} - Elimina un producto.</summary>
     [HttpDelete("products/{id}")]
     public async Task<IActionResult> DeleteProduct(string id)
     {
@@ -80,6 +92,7 @@ public sealed class AdminController(
 
     // ==================== IMAGE ENDPOINTS ====================
 
+    /// <summary>POST /admin/products/images - Sube una imagen asociada a un producto.</summary>
     [HttpPost("products/images")]
     public async Task<IActionResult> UploadProductImage()
     {
@@ -90,6 +103,7 @@ public sealed class AdminController(
         return EmptyStatus(201);
     }
 
+    /// <summary>DELETE /admin/products/images/{id} - Elimina la imagen de un producto.</summary>
     [HttpDelete("products/images/{id}")]
     public async Task<IActionResult> DeleteProductImage(string id)
     {
@@ -99,6 +113,7 @@ public sealed class AdminController(
 
     // ==================== TAG ENDPOINTS ====================
 
+    /// <summary>POST /admin/tags - Crea una etiqueta.</summary>
     [HttpPost("tags")]
     public async Task<IActionResult> CreateTag()
     {
@@ -107,9 +122,11 @@ public sealed class AdminController(
         return Json(await adminService.CreateTag(request), 201);
     }
 
+    /// <summary>GET /admin/tags - Lista todas las etiquetas.</summary>
     [HttpGet("tags")]
     public async Task<IActionResult> GetAllTags() => Json(await adminService.GetAllTagsAdmin());
 
+    /// <summary>PUT /admin/tags/{id} - Actualiza una etiqueta.</summary>
     [HttpPut("tags/{id}")]
     public async Task<IActionResult> UpdateTag(string id)
     {
@@ -119,6 +136,7 @@ public sealed class AdminController(
         return Json(await adminService.UpdateTag(tagId, request));
     }
 
+    /// <summary>DELETE /admin/tags/{id} - Elimina una etiqueta.</summary>
     [HttpDelete("tags/{id}")]
     public async Task<IActionResult> DeleteTag(string id)
     {
@@ -128,6 +146,7 @@ public sealed class AdminController(
 
     // ==================== VARIANT MANAGEMENT ====================
 
+    /// <summary>POST /admin/variants/types - Crea un tipo de variante con sus opciones.</summary>
     [HttpPost("variants/types")]
     public async Task<IActionResult> CreateVariantType()
     {
@@ -137,9 +156,11 @@ public sealed class AdminController(
         return Json(await adminService.CreateVariantType(request), 201);
     }
 
+    /// <summary>GET /admin/variants/types - Lista los tipos de variante.</summary>
     [HttpGet("variants/types")]
     public async Task<IActionResult> GetAllVariantTypes() => Json(await adminService.GetAllVariantTypes());
 
+    /// <summary>PUT /admin/variants/types/{id} - Actualiza un tipo de variante y sus opciones.</summary>
     [HttpPut("variants/types/{id}")]
     public async Task<IActionResult> UpdateVariantType(string id)
     {
@@ -150,6 +171,7 @@ public sealed class AdminController(
         return Json(await adminService.UpdateVariantType(typeId, request));
     }
 
+    /// <summary>DELETE /admin/variants/types/{id} - Elimina un tipo de variante.</summary>
     [HttpDelete("variants/types/{id}")]
     public async Task<IActionResult> DeleteVariantType(string id)
     {
@@ -159,6 +181,7 @@ public sealed class AdminController(
 
     // ============= GESTIÓN DE USUARIOS =============
 
+    /// <summary>GET /admin/users - Lista paginada de usuarios para el panel, con búsqueda y filtros.</summary>
     [HttpGet("users")]
     public async Task<IActionResult> GetAllUsers()
     {
@@ -253,15 +276,18 @@ public sealed class AdminController(
 
     // ============= ESTADÍSTICAS DEL DASHBOARD =============
 
+    /// <summary>GET /admin/stats - Estadísticas del dashboard (hoy solo usuarios totales y activos).</summary>
     [HttpGet("stats")]
     public async Task<IActionResult> GetDashboardStats() =>
         Json(ApiResponseDTO<DashboardStatsDTO>.Ok(await userService.GetDashboardStats()));
 
     // ==================== VIDEO ENDPOINTS ====================
 
+    /// <summary>GET /admin/videos - Lista todos los videos, publicados o no.</summary>
     [HttpGet("videos")]
     public async Task<IActionResult> GetAllVideos() => Json(await videoService.GetAllVideos());
 
+    /// <summary>POST /admin/videos - Crea un video.</summary>
     [HttpPost("videos")]
     public async Task<IActionResult> CreateVideo()
     {
@@ -270,6 +296,7 @@ public sealed class AdminController(
         return Json(await videoService.CreateVideo(request), 201);
     }
 
+    /// <summary>PUT /admin/videos/{id} - Actualiza un video.</summary>
     [HttpPut("videos/{id}")]
     public async Task<IActionResult> UpdateVideo(string id)
     {
@@ -279,6 +306,7 @@ public sealed class AdminController(
         return Json(await videoService.UpdateVideo(videoId, request));
     }
 
+    /// <summary>DELETE /admin/videos/{id} - Elimina un video.</summary>
     [HttpDelete("videos/{id}")]
     public async Task<IActionResult> DeleteVideo(string id)
     {
@@ -287,7 +315,7 @@ public sealed class AdminController(
     }
 }
 
-/// <summary>Port of com.todoteg.controller.ReportController.</summary>
+/// <summary>Reportes del panel admin (/admin/reports/...): resumen, ventas por día, productos más vendidos y pedidos por estado.</summary>
 [Route("admin/reports")]
 public sealed class ReportController(ReportService reportService) : JavaControllerBase
 {

@@ -1,6 +1,6 @@
 namespace Kiogloss.Api.Models;
 
-/// <summary>store_password_reset_token.</summary>
+/// <summary>Código de un solo uso (dura 30 minutos) para recuperar la contraseña. Tabla: store_password_reset_token.</summary>
 public class PasswordResetToken
 {
     public long Id { get; set; }

@@ -1,3 +1,9 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Seguridad: contraseñas, saber quién es el usuario y decidir a qué rutas puede entrar.
+// PasswordEncoder: guarda las contraseñas de forma que nadie pueda leerlas.
+// El lector de credenciales reconoce al usuario por su "llave" (token). El último paso decide si puede entrar o responde 403 (prohibido).
+// ======================================
+
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -10,9 +16,13 @@ using Microsoft.Extensions.Options;
 
 namespace Kiogloss.Api.Security;
 
-/// <summary>BCryptPasswordEncoder (strength 10, $2a$) — compatible with every hash Spring stored.</summary>
+/// <summary>
+/// Protege las contraseñas. La contraseña real NUNCA se guarda: solo una versión cifrada que no se puede revertir.
+/// Es compatible con las contraseñas ya guardadas por el sistema anterior.
+/// </summary>
 public sealed class PasswordEncoder
 {
+    /// <summary>Convierte la contraseña en su versión cifrada. Falla si es demasiado larga (más de 72 bytes).</summary>
     public string Encode(string rawPassword)
     {
         if (Encoding.UTF8.GetByteCount(rawPassword) > 72)
@@ -20,6 +30,7 @@ public sealed class PasswordEncoder
         return BCrypt.Net.BCrypt.HashPassword(rawPassword, BCrypt.Net.BCrypt.GenerateSalt(10, 'a'));
     }
 
+    /// <summary>Dice si la contraseña escrita coincide con la guardada. Ante cualquier duda responde "no".</summary>
     public bool Matches(string rawPassword, string? encodedPassword)
     {
         if (string.IsNullOrEmpty(encodedPassword) || Encoding.UTF8.GetByteCount(rawPassword) > 72) return false;
@@ -36,8 +47,10 @@ public sealed class PasswordEncoder
 }
 
 /// <summary>
-/// Port of JwtAuthenticationFilter: Bearer header, or ?token= on paths ending in /stream.
-/// Any failure leaves the request anonymous (it never answers 401 by itself).
+/// Paso "¿quién eres?": busca la llave (token) que envía la pantalla y reconoce al usuario.
+/// Si no hay llave o no sirve, la persona sigue como ANÓNIMA. Este paso no rechaza a nadie;
+/// eso lo decide el siguiente paso (UrlAuthorizationMiddleware).
+/// En las rutas /stream la llave viaja en la dirección (?token=) porque el navegador no permite otra forma.
 /// </summary>
 public sealed class SpringJwtAuthenticationHandler(
     IOptionsMonitor<AuthenticationSchemeOptions> options,
@@ -93,9 +106,12 @@ public sealed class SpringJwtAuthenticationHandler(
 }
 
 /// <summary>
-/// Port of SecurityConfig#securityFilterChain authorizeHttpRequests (same matcher order).
-/// Spring answered every denial with an empty 403 (Http403ForbiddenEntryPoint / AccessDeniedHandlerImpl);
-/// the admin frontend relies on that 403 to refresh its token.
+/// Paso "¿puedes entrar aquí?". Las reglas, en orden:
+///   1. Rutas abiertas (login, products, article, tags, videos, uploads, recuperar contraseña): cualquiera.
+///   2. Rutas /admin: solo administradores.
+///   3. Todo lo demás: cualquier usuario que haya iniciado sesión.
+/// Si no cumple, responde 403 (prohibido). El panel admin usa ese 403 para pedir una llave nueva.
+/// Para abrir una ruta nueva al público, agrégala a PermitExact o PermitPrefixes.
 /// </summary>
 public sealed class UrlAuthorizationMiddleware(RequestDelegate next)
 {
@@ -129,9 +145,10 @@ public sealed class UrlAuthorizationMiddleware(RequestDelegate next)
         path == prefix || path.StartsWith(prefix + "/", StringComparison.Ordinal);
 }
 
+/// <summary>Atajo para saber qué usuario hizo la petición.</summary>
 public static class HttpContextUserExtensions
 {
-    /// <summary>(UserProfile) authentication.getPrincipal()</summary>
+    /// <summary>Devuelve el usuario que inició sesión en esta petición.</summary>
     public static UserProfile Principal(this HttpContext context) =>
         context.Items[typeof(UserProfile)] as UserProfile
         ?? throw JavaErrors.NullPointer("Cannot invoke \"org.springframework.security.core.Authentication.getPrincipal()\" because \"auth\" is null");

@@ -1,3 +1,8 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Notificaciones: avisos que le llegan al usuario en vivo y que además quedan guardados.
+// Se avisa cuando hay un pedido nuevo, cuando cambia su estado y cuando queda poco stock.
+// ======================================
+
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text;
@@ -45,7 +50,7 @@ public sealed class SseEmitterRegistry(ILogger<SseEmitterRegistry> logger)
         }
     }
 
-    /// <summary>NotificationService#subscribe — keeps the response open until timeout or client disconnect.</summary>
+    /// <summary>Abre una conexión en vivo con el navegador y la mantiene hasta que pasen 30 minutos o el cliente se vaya.</summary>
     public async Task Subscribe(long userId, HttpContext context)
     {
         context.Features.Get<IHttpResponseBodyFeature>()?.DisableBuffering();
@@ -73,7 +78,7 @@ public sealed class SseEmitterRegistry(ILogger<SseEmitterRegistry> logger)
         }
     }
 
-    /// <summary>@Scheduled(fixedRate = 25000) sendHeartbeat</summary>
+    /// <summary>Envía el latido a cada conexión abierta y descarta las que ya no responden.</summary>
     public async Task SendHeartbeat()
     {
         var stale = new List<long>();
@@ -91,6 +96,7 @@ public sealed class SseEmitterRegistry(ILogger<SseEmitterRegistry> logger)
         foreach (var userId in stale) _emitters.TryRemove(userId, out _);
     }
 
+    /// <summary>Envía una notificación a las conexiones SSE abiertas del usuario.</summary>
     public async Task PushToClient(long userId, NotificationDTO notification)
     {
         if (!_emitters.TryGetValue(userId, out var emitter)) return;
@@ -105,7 +111,8 @@ public sealed class SseEmitterRegistry(ILogger<SseEmitterRegistry> logger)
     }
 }
 
-/// <summary>Port of com.todoteg.service.NotificationService.</summary>
+/// <summary>Crea los avisos del negocio (pedido nuevo, cambio de estado, poco stock), los guarda y los envía en vivo.
+/// Si un aviso falla, el pedido que lo originó NO se cancela.</summary>
 public class NotificationService(
     KioglossDbContext db,
     IServiceScopeFactory scopeFactory,
@@ -118,12 +125,14 @@ public class NotificationService(
 
     // ==================== SSE ====================
 
+    /// <summary>Registra la conexión SSE del usuario para recibir notificaciones en tiempo real.</summary>
     public Task Subscribe(long userId, HttpContext context) => emitters.Subscribe(userId, context);
 
     // ==================== BUSINESS EVENTS ====================
     // @Transactional(propagation = REQUIRES_NEW): every event runs in its own scope/DbContext and commits
     // on its own, even if the caller's transaction is rolled back afterwards (same as the Spring app).
 
+    /// <summary>Notifica a todos los administradores que se creó una orden.</summary>
     public async Task NotifyOrderCreated(long orderId, string customerName, double amount)
     {
         var msg = "Orden #" + orderId + " de " + customerName + " por COP " + amount.ToString("N0", _culture);
@@ -140,6 +149,7 @@ public class NotificationService(
         });
     }
 
+    /// <summary>Notifica al cliente que cambió el estado de su orden.</summary>
     public async Task NotifyOrderStatusChanged(long orderId, OrderStatus status, long userId)
     {
         var msg = "Tu orden #" + orderId + " ahora está: " + status.Description();
@@ -152,6 +162,7 @@ public class NotificationService(
         });
     }
 
+    /// <summary>Genera alertas de stock bajo o agotado para los administradores, evitando repetirlas en la última hora.</summary>
     public async Task CheckAndNotifyStock(long variantId, int stock, string productName)
     {
         await RequiresNew(async (ctx, tx) =>
@@ -194,6 +205,7 @@ public class NotificationService(
 
     // ==================== REST METHODS ====================
 
+    /// <summary>Lista paginada de notificaciones del destinatario, de la más reciente a la más antigua.</summary>
     public async Task<SpringPage<NotificationDTO>> GetNotifications(long userId, PageRequest pageable)
     {
         var page = await db.Notifications
@@ -203,9 +215,11 @@ public class NotificationService(
         return page.Map(ToDTO);
     }
 
+    /// <summary>Cantidad de notificaciones sin leer del destinatario.</summary>
     public Task<long> GetUnreadCount(long userId) =>
         db.Notifications.LongCountAsync(n => n.RecipientId == userId && !n.Read);
 
+    /// <summary>Marca una notificación como leída si pertenece al usuario.</summary>
     public async Task MarkRead(long notifId, long userId)
     {
         var n = await db.Notifications.FindAsync(notifId);
@@ -217,6 +231,7 @@ public class NotificationService(
         }
     }
 
+    /// <summary>Marca como leídas todas las notificaciones pendientes del usuario.</summary>
     public async Task MarkAllRead(long userId)
     {
         var now = DateTime.Now;
@@ -225,6 +240,7 @@ public class NotificationService(
             .ExecuteUpdateAsync(s => s.SetProperty(n => n.Read, true).SetProperty(n => n.ReadAt, now));
     }
 
+    /// <summary>Elimina una notificación si pertenece al usuario.</summary>
     public async Task Delete(long notifId, long userId)
     {
         var n = await db.Notifications.FindAsync(notifId);
@@ -255,16 +271,17 @@ public class NotificationService(
 
     private static Notification BuildNotification(long recipientId, string scope, NotificationType type, string title,
         string message, string entityType, long entityId) => new()
-    {
-        RecipientId = recipientId,
-        RecipientScope = scope,
-        Type = type,
-        Title = title,
-        Message = message,
-        RelatedEntityType = entityType,
-        RelatedEntityId = entityId,
-    };
+        {
+            RecipientId = recipientId,
+            RecipientScope = scope,
+            Type = type,
+            Title = title,
+            Message = message,
+            RelatedEntityType = entityType,
+            RelatedEntityId = entityId,
+        };
 
+    /// <summary>Convierte una notificación en su DTO.</summary>
     public static NotificationDTO ToDTO(Notification n) => new()
     {
         Id = n.Id,

@@ -1,3 +1,8 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Tareas que se hacen solas, sin que nadie las pida.
+// Una mantiene abiertas las notificaciones en vivo; la otra crea datos de ejemplo cuando la tienda está vacía.
+// ======================================
+
 using Kiogloss.Api.Configuration;
 using Kiogloss.Api.Data;
 using Kiogloss.Api.Models;
@@ -7,7 +12,7 @@ using Microsoft.Extensions.Options;
 
 namespace Kiogloss.Api.Background;
 
-/// <summary>NotificationService#sendHeartbeat — @Scheduled(fixedRate = 25000).</summary>
+/// <summary>Cada 25 segundos envía una señal pequeña ("latido") a las notificaciones en vivo para que la conexión no se cierre por estar quieta.</summary>
 public sealed class SseHeartbeatService(SseEmitterRegistry emitters) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -18,7 +23,7 @@ public sealed class SseHeartbeatService(SseEmitterRegistry emitters) : Backgroun
     }
 }
 
-/// <summary>Port of com.todoteg.config.DatabaseSeeder (CommandLineRunner): seeds only an empty catalog.</summary>
+/// <summary>Al encender el sistema, si la tienda está vacía, crea datos de ejemplo. Si ya hay datos, no hace nada.</summary>
 public sealed class DatabaseSeeder(IServiceScopeFactory scopeFactory, IOptions<AppOptions> options, ILogger<DatabaseSeeder> logger)
     : IHostedService
 {

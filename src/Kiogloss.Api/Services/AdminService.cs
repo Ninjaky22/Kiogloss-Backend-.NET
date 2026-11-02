@@ -1,3 +1,7 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Reglas del panel de administración: crear, editar y borrar productos, etiquetas y variantes, y consultar usuarios y pedidos.
+// ======================================
+
 using Kiogloss.Api.Compat;
 using Kiogloss.Api.Data;
 using Kiogloss.Api.Dtos;
@@ -7,11 +11,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Kiogloss.Api.Services;
 
-/// <summary>Port of com.todoteg.service.AdminService.</summary>
+/// <summary>Reglas del panel admin: crear, ver, editar y borrar productos, imágenes, etiquetas y variantes, y consultar usuarios y pedidos.</summary>
 public sealed class AdminService(KioglossDbContext db, CloudinaryService cloudinaryService)
 {
     // ==================== PRODUCT MANAGEMENT ====================
 
+    /// <summary>Crea un producto con sus variantes, atributos e imágenes en una sola transacción.</summary>
     public async Task<ProductAdminResponse> CreateProduct(ProductCreateRequest request)
     {
         await using var tx = await db.Database.BeginTransactionAsync();
@@ -70,6 +75,7 @@ public sealed class AdminService(KioglossDbContext db, CloudinaryService cloudin
         return response;
     }
 
+    /// <summary>Actualiza un producto y sincroniza sus variantes, atributos e imágenes.</summary>
     public async Task<ProductAdminResponse> UpdateProduct(long productId, ProductUpdateRequest request)
     {
         await using var tx = await db.Database.BeginTransactionAsync();
@@ -158,6 +164,7 @@ public sealed class AdminService(KioglossDbContext db, CloudinaryService cloudin
         return response;
     }
 
+    /// <summary>Elimina un producto y sus recursos asociados.</summary>
     public async Task DeleteProduct(long productId)
     {
         var product = await LoadProductGraph(productId) ?? throw new Compat.RuntimeException("Product not found");
@@ -165,6 +172,7 @@ public sealed class AdminService(KioglossDbContext db, CloudinaryService cloudin
         await db.SaveChangesAsync();
     }
 
+    /// <summary>Lista paginada de productos para el panel admin, con búsqueda opcional.</summary>
     public async Task<SpringPage<ProductAdminResponse>> GetAllProducts(string? search, PageRequest pageable)
     {
         IQueryable<Product> query = db.Products;
@@ -183,6 +191,7 @@ public sealed class AdminService(KioglossDbContext db, CloudinaryService cloudin
         return new SpringPage<ProductAdminResponse>(content, pageable, page.TotalElements);
     }
 
+    /// <summary>Obtiene un producto por id; lanza <see cref="ResourceNotFoundException"/> si no existe.</summary>
     public async Task<ProductAdminResponse> GetProductById(long productId)
     {
         var product = await db.Products.FindAsync(productId) ?? throw new Compat.RuntimeException("Product not found");
@@ -191,6 +200,7 @@ public sealed class AdminService(KioglossDbContext db, CloudinaryService cloudin
 
     // ==================== IMAGE MANAGEMENT ====================
 
+    /// <summary>Sube una imagen y la asocia a un producto.</summary>
     public async Task UploadProductImage(ProductImageUploadRequest request)
     {
         var product = await db.Products.FindAsync(request.ProductId!.Value) ?? throw new Compat.RuntimeException("Product not found");
@@ -199,6 +209,7 @@ public sealed class AdminService(KioglossDbContext db, CloudinaryService cloudin
         await db.SaveChangesAsync();
     }
 
+    /// <summary>Elimina una imagen de producto (y su archivo si es local).</summary>
     public async Task DeleteProductImage(long imageId)
     {
         var image = await db.Images.FindAsync(imageId) ?? throw new Compat.RuntimeException("Image not found");
@@ -208,6 +219,7 @@ public sealed class AdminService(KioglossDbContext db, CloudinaryService cloudin
 
     // ==================== TAG MANAGEMENT ====================
 
+    /// <summary>Crea una etiqueta.</summary>
     public async Task<TagDTO> CreateTag(TagCreateRequest request)
     {
         var tag = new Tag { Name = request.Name!, ImageURL = request.ImageURL };
@@ -216,6 +228,7 @@ public sealed class AdminService(KioglossDbContext db, CloudinaryService cloudin
         return new TagDTO(tag.Id, tag.Name, tag.ImageURL);
     }
 
+    /// <summary>Actualiza una etiqueta existente.</summary>
     public async Task<TagDTO> UpdateTag(long tagId, TagUpdateRequest request)
     {
         var tag = await db.Tags.FindAsync(tagId) ?? throw new Compat.RuntimeException("Tag not found");
@@ -225,6 +238,7 @@ public sealed class AdminService(KioglossDbContext db, CloudinaryService cloudin
         return new TagDTO(tag.Id, tag.Name, tag.ImageURL);
     }
 
+    /// <summary>Elimina una etiqueta.</summary>
     public async Task DeleteTag(long tagId)
     {
         // Tag is not the owner of the many-to-many: Hibernate only deletes the tag row, so a tag still
@@ -233,11 +247,13 @@ public sealed class AdminService(KioglossDbContext db, CloudinaryService cloudin
         await db.Tags.Where(t => t.Id == tag.Id).ExecuteDeleteAsync();
     }
 
+    /// <summary>Lista todas las etiquetas.</summary>
     public async Task<List<TagDTO>> GetAllTagsAdmin() =>
         (await db.Tags.OrderBy(t => t.Id).ToListAsync()).Select(t => new TagDTO(t.Id, t.Name, t.ImageURL)).ToList();
 
     // ==================== VARIANT MANAGEMENT ====================
 
+    /// <summary>Crea un tipo de variante con sus opciones.</summary>
     public async Task<VariantTypeDTO> CreateVariantType(VariantTypeCreateRequest request)
     {
         var type = new VariantType { Name = request.Name!, Type = request.Type };
@@ -254,6 +270,7 @@ public sealed class AdminService(KioglossDbContext db, CloudinaryService cloudin
         return ConvertToVariantTypeDTO(type);
     }
 
+    /// <summary>Actualiza un tipo de variante y sus opciones.</summary>
     public async Task<VariantTypeDTO> UpdateVariantType(long id, VariantTypeCreateRequest request)
     {
         var type = await db.VariantTypes.Include(t => t.Options).FirstOrDefaultAsync(t => t.Id == id)
@@ -307,9 +324,11 @@ public sealed class AdminService(KioglossDbContext db, CloudinaryService cloudin
         return ConvertToVariantTypeDTO(type);
     }
 
+    /// <summary>Lista todos los tipos de variante con sus opciones.</summary>
     public async Task<List<VariantTypeDTO>> GetAllVariantTypes() =>
         (await db.VariantTypes.OrderBy(t => t.Id).ToListAsync()).Select(ConvertToVariantTypeDTO).ToList();
 
+    /// <summary>Elimina un tipo de variante.</summary>
     public async Task DeleteVariantType(long id)
     {
         var type = await db.VariantTypes.Include(t => t.Options).FirstOrDefaultAsync(t => t.Id == id)

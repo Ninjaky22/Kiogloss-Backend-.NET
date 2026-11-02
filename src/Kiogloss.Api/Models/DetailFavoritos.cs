@@ -1,6 +1,6 @@
 namespace Kiogloss.Api.Models;
 
-/// <summary>store_detail_favoritos.</summary>
+/// <summary>Un producto que el cliente marcó como favorito. Tabla: store_detail_favoritos.</summary>
 public class DetailFavoritos
 {
     public long Id { get; set; }

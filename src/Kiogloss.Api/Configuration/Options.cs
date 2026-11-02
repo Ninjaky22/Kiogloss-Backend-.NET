@@ -1,3 +1,8 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Lista de ajustes del sistema: claves de acceso, correo, imágenes, etc.
+// Los valores no se escriben aquí; se ponen en el archivo appsettings.Local.json o en las variables de entorno.
+// ======================================
+
 namespace Kiogloss.Api.Configuration;
 
 /// <summary>jwt.* properties.</summary>

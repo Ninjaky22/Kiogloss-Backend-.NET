@@ -1,3 +1,8 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Direcciones (rutas) abiertas o de uso general: iniciar sesión, productos, usuarios y favoritos.
+// Algunas no piden iniciar sesión (login, products, article, tags, videos). Las demás sí.
+// ======================================
+
 using Kiogloss.Api.Compat;
 using Kiogloss.Api.Dtos;
 using Kiogloss.Api.Security;
@@ -6,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kiogloss.Api.Controllers;
 
-/// <summary>Port of com.todoteg.controller.AuthController.</summary>
+/// <summary>Iniciar sesión y recuperar la contraseña: /login, /refresh, /auth/forgot-password, /auth/reset-password.</summary>
 public sealed class AuthController(AuthService authService, PasswordResetService passwordResetService) : JavaControllerBase
 {
     private const string Ctl = " com.todoteg.controller.AuthController";
@@ -55,7 +60,7 @@ public sealed class AuthController(AuthService authService, PasswordResetService
     }
 }
 
-/// <summary>Port of com.todoteg.controller.ProductController.</summary>
+/// <summary>Catálogo abierto a todos (sin iniciar sesión): /products, /article/{slug}, /tags y /videos.</summary>
 public sealed class ProductController(ProductService productService, VideoService videoService) : JavaControllerBase
 {
     /// <summary>GET /products - Listar productos publicados con paginación y búsqueda</summary>
@@ -91,6 +96,7 @@ public sealed class ProductController(ProductService productService, VideoServic
     [HttpGet("tags")]
     public async Task<IActionResult> GetTags() => Json(await productService.GetAllTags());
 
+    /// <summary>GET /videos - Lista los videos publicados.</summary>
     [HttpGet("videos")]
     public async Task<IActionResult> GetAllVideos() => Json(await videoService.GetPublishedVideos());
 
@@ -103,7 +109,7 @@ public sealed class ProductController(ProductService productService, VideoServic
     }
 }
 
-/// <summary>Port of com.todoteg.controller.UserController.</summary>
+/// <summary>Usuarios (/user): registrarse, ver el perfil y actualizarlo.</summary>
 [Route("user")]
 public sealed class UserController(UserService userService, AuthService authService, JwtUtil jwtUtil) : JavaControllerBase
 {
@@ -196,7 +202,7 @@ public sealed class UserController(UserService userService, AuthService authServ
     };
 }
 
-/// <summary>Port of com.todoteg.controller.FavoriteController.</summary>
+/// <summary>Favoritos del cliente: agregar, quitar y ver la lista.</summary>
 public sealed class FavoriteController(FavoriteService favoriteService) : JavaControllerBase
 {
     /// <summary>POST /user/favorite - Agregar producto a favoritos</summary>

@@ -1,3 +1,8 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Conexión con la base de datos (PostgreSQL).
+// Dice qué tablas existen y cómo se relaciona cada una con las clases del código. No crea ni cambia tablas.
+// ======================================
+
 using Kiogloss.Api.Models;
 using Microsoft.EntityFrameworkCore;
 

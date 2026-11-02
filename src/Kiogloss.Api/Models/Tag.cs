@@ -2,7 +2,7 @@ using Kiogloss.Api.Compat;
 
 namespace Kiogloss.Api.Models;
 
-/// <summary>store_tag.</summary>
+/// <summary>Etiqueta/categoría para clasificar productos. Tabla: store_tag.</summary>
 public class Tag
 {
     public long Id { get; set; }

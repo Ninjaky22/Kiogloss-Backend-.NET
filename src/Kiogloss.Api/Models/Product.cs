@@ -2,7 +2,7 @@ using Kiogloss.Api.Compat;
 
 namespace Kiogloss.Api.Models;
 
-/// <summary>store_product.</summary>
+/// <summary>Producto de la tienda: título, precio, etiquetas, imágenes y variantes. El "slug" es su nombre para la dirección web. Tabla: store_product.</summary>
 public class Product
 {
     public long Id { get; set; }

@@ -1,3 +1,8 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Mantiene el mismo orden en que el sistema anterior mostraba algunas listas (etiquetas, imágenes...).
+// Si se cambia, esas listas podrían verse en otro orden en las pantallas. Mejor no tocarlo.
+// ======================================
+
 namespace Kiogloss.Api.Compat;
 
 /// <summary>

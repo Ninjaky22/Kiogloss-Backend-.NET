@@ -1,3 +1,8 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Define cómo se lee y se escribe la información que viaja entre las pantallas y el servidor (formato JSON).
+// Es flexible al recibir (por ejemplo acepta un número escrito como texto) y exacto al enviar.
+// ======================================
+
 using System.Buffers;
 using System.Globalization;
 using System.Text;

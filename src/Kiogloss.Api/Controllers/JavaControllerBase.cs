@@ -1,3 +1,8 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Base común de todos los controladores.
+// Tiene herramientas para leer los datos que llegan, usar valores por defecto y responder siempre con el mismo formato.
+// ======================================
+
 using System.Globalization;
 using System.Text;
 using System.Text.Json;

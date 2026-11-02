@@ -1,3 +1,7 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Toma los datos tal como están en la base de datos y los transforma en lo que necesita mostrar la pantalla.
+// ======================================
+
 using Kiogloss.Api.Compat;
 using Kiogloss.Api.Dtos;
 using Kiogloss.Api.Dtos.Admin;
@@ -5,7 +9,7 @@ using Kiogloss.Api.Models;
 
 namespace Kiogloss.Api.Mappers;
 
-/// <summary>Port of com.todoteg.mapper.UserMapper (OrderMapper#toOrderSummaryPage is the same as here).</summary>
+/// <summary>Transforma los datos de usuarios y pedidos al formato que necesitan mostrar el panel admin y el usuario.</summary>
 public sealed class UserMapper
 {
     public UserDashboardDTO ToUserDashboardDTO(UserProfile user)

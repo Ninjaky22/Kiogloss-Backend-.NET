@@ -1,6 +1,6 @@
 namespace Kiogloss.Api.Models;
 
-/// <summary>store_account.</summary>
+/// <summary>Cuenta de compras de un usuario: sus puntos, su dirección, sus favoritos y sus pedidos. Tabla: store_account.</summary>
 public class Account
 {
     public long Id { get; set; }

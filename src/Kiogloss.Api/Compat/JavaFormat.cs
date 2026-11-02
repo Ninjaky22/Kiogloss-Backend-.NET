@@ -1,3 +1,8 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Ayudas para escribir números y fechas igual que lo hacía el sistema anterior (hecho en Java).
+// Así las pantallas siguen viendo los mismos textos, por ejemplo "10.0" en vez de "10".
+// ======================================
+
 using System.Globalization;
 using System.Text;
 

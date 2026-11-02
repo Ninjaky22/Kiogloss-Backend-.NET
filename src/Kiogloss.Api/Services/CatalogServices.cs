@@ -1,3 +1,7 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Reglas del catálogo: productos y etiquetas, favoritos, videos y los reportes del administrador.
+// ======================================
+
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using Kiogloss.Api.Compat;
@@ -8,11 +12,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Kiogloss.Api.Services;
 
-/// <summary>Port of com.todoteg.service.ProductService.</summary>
+/// <summary>Catálogo de la tienda: lista de productos (con filtros, orden y páginas), detalle de un producto y etiquetas.</summary>
 public sealed class ProductService(KioglossDbContext db, CloudinaryService cloudinaryService)
 {
+    /// <summary>Criterio de ordenamiento del catálogo público.</summary>
     public enum SortMode { Latest, PriceLow, PriceHigh }
 
+    /// <summary>Lista paginada de productos publicados, filtrable por texto y etiquetas, con el orden indicado.</summary>
     public async Task<SpringPage<ProductListDTO>> GetPublishedProducts(string? search, List<string>? tags,
         SortMode sort, PageRequest pageable)
     {
@@ -49,6 +55,7 @@ public sealed class ProductService(KioglossDbContext db, CloudinaryService cloud
         return new SpringPage<ProductListDTO>(dtos, pageable, products.TotalElements);
     }
 
+    /// <summary>Obtiene un producto publicado por su slug.</summary>
     public async Task<ProductDetailDTO> GetProductBySlug(string slug)
     {
         var product = await db.Products.FirstOrDefaultAsync(p => p.Slug == slug)
@@ -56,6 +63,7 @@ public sealed class ProductService(KioglossDbContext db, CloudinaryService cloud
         return await ConvertToDetailDTO(product);
     }
 
+    /// <summary>Lista todas las etiquetas disponibles en el catálogo.</summary>
     public async Task<List<TagDTO>> GetAllTags() =>
         (await db.Tags.ToListAsync()).Select(t => new TagDTO(t.Id, t.Name, t.ImageURL)).ToList();
 
@@ -128,9 +136,10 @@ public sealed class ProductService(KioglossDbContext db, CloudinaryService cloud
     }
 }
 
-/// <summary>Port of com.todoteg.service.FavoriteService.</summary>
+/// <summary>Favoritos: agregar, quitar y ver los productos favoritos de un cliente.</summary>
 public sealed class FavoriteService(KioglossDbContext db, CloudinaryService cloudinaryService)
 {
+    /// <summary>Agrega un producto a los favoritos de una cuenta.</summary>
     public async Task<long> AddFavorite(FavoriteCreateRequest request)
     {
         var account = await db.Accounts.FindAsync(request.Account!.Value) ?? throw new Compat.RuntimeException("Account not found");
@@ -148,6 +157,7 @@ public sealed class FavoriteService(KioglossDbContext db, CloudinaryService clou
         return favorite.Id;
     }
 
+    /// <summary>Quita un favorito por id.</summary>
     public async Task RemoveFavorite(long favoriteId)
     {
         var favorite = await db.Favorites.FindAsync(favoriteId) ?? throw new Compat.RuntimeException("Favorite not found");
@@ -155,6 +165,7 @@ public sealed class FavoriteService(KioglossDbContext db, CloudinaryService clou
         await db.SaveChangesAsync();
     }
 
+    /// <summary>Obtiene los favoritos de una cuenta.</summary>
     public async Task<AccountFavoritesResponse> GetAccountFavorites(long accountId)
     {
         var account = await db.Accounts.FindAsync(accountId) ?? throw new Compat.RuntimeException("Account not found");
@@ -198,16 +209,23 @@ public sealed class FavoriteService(KioglossDbContext db, CloudinaryService clou
     }
 }
 
-/// <summary>Port of com.todoteg.service.VideoService.</summary>
+/// <summary>Videos: el público ve solo los publicados; el administrador maneja todos.</summary>
 public sealed class VideoService(KioglossDbContext db, FileStorageService fileStorageService)
 {
+    /// <summary>Lista todos los videos (uso administrativo).</summary>
     public async Task<List<VideoReelDTO>> GetAllVideos() =>
         (await db.VideoReels.OrderByDescending(v => v.CreatedAt).ThenByDescending(v => v.Id).ToListAsync()).Select(ToDTO).ToList();
 
+    /// <summary>
+    /// Lista los videos que ve el público: todos los que el administrador cargó.
+    /// Antes se ocultaban los videos cuyo producto estaba en "Borrador", y por eso videos cargados
+    /// en el panel no aparecían en la tienda sin ningún aviso.
+    /// </summary>
     public async Task<List<VideoReelDTO>> GetPublishedVideos() =>
-        (await db.VideoReels.Where(v => v.Product.Status == "published").OrderByDescending(v => v.CreatedAt).ThenByDescending(v => v.Id).ToListAsync())
+        (await db.VideoReels.OrderByDescending(v => v.CreatedAt).ThenByDescending(v => v.Id).ToListAsync())
         .Select(ToDTO).ToList();
 
+    /// <summary>Crea un video.</summary>
     public async Task<VideoReelDTO> CreateVideo(VideoCreateRequest request)
     {
         var product = await db.Products.FindAsync(request.ProductId!.Value)
@@ -225,6 +243,7 @@ public sealed class VideoService(KioglossDbContext db, FileStorageService fileSt
         return ToDTO(video);
     }
 
+    /// <summary>Actualiza un video.</summary>
     public async Task<VideoReelDTO> UpdateVideo(long id, VideoUpdateRequest request)
     {
         var video = await FindById(id);
@@ -240,6 +259,7 @@ public sealed class VideoService(KioglossDbContext db, FileStorageService fileSt
         return ToDTO(video);
     }
 
+    /// <summary>Elimina un video.</summary>
     public async Task DeleteVideo(long id)
     {
         var video = await FindById(id);
@@ -271,7 +291,7 @@ public sealed class VideoService(KioglossDbContext db, FileStorageService fileSt
     }
 }
 
-/// <summary>Port of com.todoteg.service.ReportService (queries of ReportRepository).</summary>
+/// <summary>Cálculo de las cifras del panel: ingresos, pedidos, ventas por día y productos más vendidos.</summary>
 public sealed class ReportService(KioglossDbContext db)
 {
     /// <summary>Resumen general: KPIs principales del dashboard.</summary>

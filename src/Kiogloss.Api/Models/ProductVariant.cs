@@ -1,6 +1,6 @@
 namespace Kiogloss.Api.Models;
 
-/// <summary>store_product_variant.</summary>
+/// <summary>Versión concreta de un producto (ej. talla M, color rojo) con su propio stock y código (SKU). Tabla: store_product_variant.</summary>
 public class ProductVariant
 {
     public long Id { get; set; }

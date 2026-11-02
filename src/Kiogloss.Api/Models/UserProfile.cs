@@ -2,7 +2,7 @@ using Kiogloss.Api.Compat;
 
 namespace Kiogloss.Api.Models;
 
-/// <summary>store_userprofile. Also plays the role of Spring Security's UserDetails.</summary>
+/// <summary>Persona que usa el sistema, sea cliente o administrador. Es administrador si IsSuperuser es verdadero. Tabla: store_userprofile.</summary>
 public class UserProfile
 {
     public long Id { get; set; }

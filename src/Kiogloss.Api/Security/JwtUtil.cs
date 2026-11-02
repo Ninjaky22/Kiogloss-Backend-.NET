@@ -1,3 +1,8 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Crea y revisa las "llaves" (tokens) que prueban que el usuario inició sesión.
+// Hay dos: una de corta duración para usar la API y otra más larga para pedir una nueva sin escribir la contraseña otra vez.
+// ======================================
+
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;

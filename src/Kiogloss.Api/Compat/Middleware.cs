@@ -1,3 +1,9 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Revisiones por las que pasa TODA petición, antes o después de llegar a su destino.
+// Incluye: cabeceras de seguridad, permiso para que otras páginas web consulten la API, rutas que no existen y el manejo de errores.
+// El manejo de errores es el único lugar donde cualquier falla se convierte en una respuesta ordenada.
+// ======================================
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
@@ -5,7 +11,9 @@ using Npgsql;
 
 namespace Kiogloss.Api.Compat;
 
-/// <summary>com.todoteg.dto.admin.ApiResponseDTO — envelope of the admin endpoints and of every error.</summary>
+/// <summary>
+/// Formato fijo de las respuestas del admin y de TODOS los errores: { success (salió bien o no), message (mensaje), data (los datos) }.
+/// </summary>
 public sealed class ApiResponseDTO<T>(bool success, string? message, T? data)
 {
     [JsonPropertyName("success")] public bool Success { get; } = success;
@@ -27,7 +35,10 @@ public sealed class ErrorResponse(string detail)
     [JsonPropertyName("detail")] public string Detail { get; } = detail;
 }
 
-/// <summary>Port of com.todoteg.exception.GlobalExceptionHandler.</summary>
+/// <summary>
+/// Atrapa cualquier error que ocurra en el sistema y responde con un mensaje ordenado y el código correcto.
+/// Gracias a esto, el resto del código no necesita manejar errores por su cuenta.
+/// </summary>
 public sealed class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger)
 {
     private const string IntegrityMessage =
@@ -50,6 +61,10 @@ public sealed class GlobalExceptionMiddleware(RequestDelegate next, ILogger<Glob
         }
     }
 
+    /// <summary>
+    /// Decide qué código responder según el error: dato en uso por otros registros = 409, no encontrado = 404,
+    /// dato inválido = 400, sin permiso = 403, cualquier otro problema = 500.
+    /// </summary>
     public static (int Status, string? Message) Translate(Exception ex)
     {
         if (IsDataIntegrityViolation(ex)) return (409, IntegrityMessage);

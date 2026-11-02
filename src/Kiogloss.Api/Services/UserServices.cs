@@ -1,3 +1,7 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Reglas de usuarios: iniciar sesión, registrarse, editar el perfil, roles y recuperar la contraseña por correo.
+// ======================================
+
 using Kiogloss.Api.Compat;
 using Kiogloss.Api.Data;
 using Kiogloss.Api.Dtos;
@@ -8,9 +12,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Kiogloss.Api.Services;
 
-/// <summary>Port of com.todoteg.service.AuthService (+ the DaoAuthenticationProvider it relied on).</summary>
+/// <summary>Inicio de sesión: revisa el correo y la contraseña y entrega las llaves (tokens).</summary>
 public sealed class AuthService(KioglossDbContext db, JwtUtil jwtUtil, PasswordEncoder passwordEncoder)
 {
+    /// <summary>Autentica con email y contraseña y devuelve los tokens de acceso y de refresco.</summary>
     public async Task<TokenResponse> Login(LoginRequest request)
     {
         await Authenticate(request.Email, request.Password ?? "");
@@ -23,6 +28,7 @@ public sealed class AuthService(KioglossDbContext db, JwtUtil jwtUtil, PasswordE
         return new TokenResponse(accessToken, refreshToken);
     }
 
+    /// <summary>Emite un nuevo token de acceso a partir de un refresh token válido.</summary>
     public async Task<TokenResponse> Refresh(string? refreshToken)
     {
         var email = jwtUtil.ExtractUsername(refreshToken!);
@@ -50,7 +56,7 @@ public sealed class AuthService(KioglossDbContext db, JwtUtil jwtUtil, PasswordE
     }
 }
 
-/// <summary>Port of com.todoteg.service.UserService.</summary>
+/// <summary>Manejo de usuarios: registro, perfil, lista con búsqueda, roles y activar o desactivar.</summary>
 public sealed class UserService(
     KioglossDbContext db,
     PasswordEncoder passwordEncoder,
@@ -69,6 +75,7 @@ public sealed class UserService(
         ["phoneNumber"] = u => u.PhoneNumber,
     };
 
+    /// <summary>Registra un usuario con su cuenta; valida que el email sea único.</summary>
     public async Task<UserProfile> CreateUser(UserCreateRequest request)
     {
         await using var tx = await db.Database.BeginTransactionAsync();
@@ -130,6 +137,7 @@ public sealed class UserService(
         return user;
     }
 
+    /// <summary>Obtiene el detalle completo del usuario con su cuenta y dirección.</summary>
     public async Task<UserDetailResponse> GetUserDetail(long userId)
     {
         var user = await db.Users.FindAsync(userId) ?? throw new Compat.RuntimeException("User not found");
@@ -192,6 +200,7 @@ public sealed class UserService(
         };
     }
 
+    /// <summary>Actualiza los datos del usuario, su cuenta y su dirección.</summary>
     public async Task UpdateUser(long userId, UserUpdateRequest request)
     {
         await using var tx = await db.Database.BeginTransactionAsync();
@@ -243,9 +252,11 @@ public sealed class UserService(
         return query.OrderByProperty(key, descending).ThenBy(u => u.Id).ToSpringPageAsync(pageable);
     }
 
+    /// <summary>Obtiene un usuario por id; lanza <see cref="ResourceNotFoundException"/> si no existe.</summary>
     public async Task<UserProfile> FindById(long id) =>
         await db.Users.FindAsync(id) ?? throw new ResourceNotFoundException("Usuario no encontrado con ID: " + id);
 
+    /// <summary>Actualiza los indicadores de rol (staff, superusuario, activo) que vengan informados.</summary>
     public async Task<UserProfile> UpdateUserRoles(long id, UpdateUserRolesDTO updateDTO)
     {
         var user = await FindById(id);
@@ -256,6 +267,7 @@ public sealed class UserService(
         return user;
     }
 
+    /// <summary>Activa o desactiva un usuario.</summary>
     public async Task<UserProfile> ToggleUserStatus(long id)
     {
         var user = await FindById(id);
@@ -264,6 +276,7 @@ public sealed class UserService(
         return user;
     }
 
+    /// <summary>Calcula las estadísticas del dashboard (usuarios totales y activos).</summary>
     public async Task<DashboardStatsDTO> GetDashboardStats() => new()
     {
         TotalUsers = await db.Users.LongCountAsync(),
@@ -275,7 +288,7 @@ public sealed class UserService(
         value.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
 }
 
-/// <summary>Port of com.todoteg.service.PasswordResetService.</summary>
+/// <summary>Recuperar la contraseña en 2 pasos: pedir un enlace por correo y confirmar con el código recibido.</summary>
 public sealed class PasswordResetService(
     KioglossDbContext db,
     PasswordEncoder passwordEncoder,

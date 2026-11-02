@@ -1,3 +1,7 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Reglas de los pedidos: crear uno (y descontar el stock), listarlos y cambiar su estado.
+// ======================================
+
 using Kiogloss.Api.Compat;
 using Kiogloss.Api.Data;
 using Kiogloss.Api.Dtos;
@@ -6,12 +10,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Kiogloss.Api.Services;
 
-/// <summary>Port of com.todoteg.service.OrderService.</summary>
+/// <summary>Pedidos: crea la orden (todo o nada, y revisando que haya stock), la lista y cambia su etapa.</summary>
 public sealed class OrderService(
     KioglossDbContext db,
     CloudinaryService cloudinaryService,
     NotificationService notificationService)
 {
+    /// <summary>Crea una orden pendiente en una transacción: valida la dirección de entrega, descuenta stock por variante, crea los detalles y notifica a los administradores.</summary>
     public async Task CreateOrder(OrderCreateRequest request)
     {
         await using var tx = await db.Database.BeginTransactionAsync();
@@ -92,6 +97,7 @@ public sealed class OrderService(
         await tx.CommitAsync();
     }
 
+    /// <summary>Lista paginada de las órdenes del usuario, filtrable por estado y rango de fechas.</summary>
     public async Task<SpringPage<OrderDetailResponse>> GetUserOrders(long userId, OrderStatus? status,
         DateOnly? startDate, DateOnly? endDate, PageRequest pageable)
     {
@@ -181,6 +187,7 @@ public sealed class OrderService(
         return query.OrderByDescending(o => o.Date).ThenByDescending(o => o.Id).ToSpringPageAsync(pageable);
     }
 
+    /// <summary>Obtiene una orden por id; lanza <see cref="ResourceNotFoundException"/> si no existe.</summary>
     public async Task<Order> FindById(long id) =>
         await db.Orders.FindAsync(id) ?? throw new ResourceNotFoundException("Orden no encontrada con ID: " + id);
 

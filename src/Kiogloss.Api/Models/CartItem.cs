@@ -1,6 +1,6 @@
 namespace Kiogloss.Api.Models;
 
-/// <summary>store_cart_item.</summary>
+/// <summary>Un producto que está en el carrito de compras, con la cantidad elegida. Tabla: store_cart_item.</summary>
 public class CartItem
 {
     public long Id { get; set; }

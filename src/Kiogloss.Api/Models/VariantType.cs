@@ -1,6 +1,6 @@
 namespace Kiogloss.Api.Models;
 
-/// <summary>store_variant_type.</summary>
+/// <summary>Característica en que varía un producto (ej. Color, Talla) con sus opciones. Tabla: store_variant_type.</summary>
 public class VariantType
 {
     public long Id { get; set; }

@@ -1,3 +1,9 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Aquí empieza todo: es lo primero que se ejecuta al encender el programa.
+// Prepara las piezas del sistema, lee la configuración y define el camino que sigue cada petición que llega.
+// Se toca para: sumar una pieza nueva al sistema o cambiar el orden de las revisiones de cada petición.
+// ======================================
+
 using Kiogloss.Api.Background;
 using Kiogloss.Api.Compat;
 using Kiogloss.Api.Configuration;
@@ -28,16 +34,21 @@ builder.Services.Configure<FormOptions>(o =>
     o.ValueLengthLimit = int.MaxValue;
 });
 
+// --- 1. AJUSTES: se leen los valores de appsettings (ver Configuration/Options.cs)
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<CloudinaryOptions>(builder.Configuration.GetSection("Cloudinary"));
 builder.Services.Configure<MailOptions>(builder.Configuration.GetSection("Mail"));
 builder.Services.Configure<AppOptions>(builder.Configuration.GetSection("App"));
 builder.Services.Configure<NotificationOptions>(builder.Configuration.GetSection("Notifications"));
 
+// --- 2. BASE DE DATOS: se conecta a PostgreSQL. Los datos relacionados se cargan solo cuando se necesitan.
 builder.Services.AddDbContext<KioglossDbContext>(o => o
     .UseNpgsql(builder.Configuration.GetConnectionString("Default"))
     .UseLazyLoadingProxies());
 
+// --- 3. PIEZAS DEL SISTEMA: aquí se registran para que cada clase reciba las que necesita.
+//   Singleton = se crea una sola vez y se comparte en toda la aplicación.
+//   Scoped    = se crea una nueva por cada petición que llega.
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<JwtUtil>();
 builder.Services.AddSingleton<PasswordEncoder>();
@@ -59,6 +70,7 @@ builder.Services.AddScoped<AdminService>();
 builder.Services.AddHostedService<SseHeartbeatService>();
 builder.Services.AddHostedService<DatabaseSeeder>();
 
+// --- 4. INICIO DE SESIÓN: se reconoce al usuario por su llave (token). Ver Security/Auth.cs
 builder.Services.AddAuthentication(SpringJwtAuthenticationHandler.SchemeName)
     .AddScheme<AuthenticationSchemeOptions, SpringJwtAuthenticationHandler>(SpringJwtAuthenticationHandler.SchemeName, null);
 builder.Services.AddControllers().AddJsonOptions(o => JsonConfig.Configure(o.JsonSerializerOptions));
@@ -86,7 +98,10 @@ app.Use((context, next) =>
     return Task.CompletedTask;
 });
 
-// Spring Security filter chain order: headers -> CORS -> JWT filter -> authorization -> DispatcherServlet
+// --- 5. PASOS QUE SIGUE CADA PETICIÓN (el ORDEN importa):
+//   seguridad básica -> permiso de otras webs -> reconocer al usuario -> revisar si puede entrar
+//   -> manejo de errores -> archivos /uploads -> buscar la ruta -> controlador.
+// (Orden heredado de Spring Security: headers -> CORS -> JWT filter -> authorization -> DispatcherServlet)
 app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseMiddleware<SpringCorsMiddleware>();
 app.UseAuthentication();

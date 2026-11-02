@@ -1,3 +1,9 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Aquí se define qué datos entran y salen de la API, como si fueran formularios.
+// Así no se muestra directamente lo que hay en la base de datos.
+// El orden de los campos es el mismo orden en que los ve la pantalla.
+// ======================================
+
 using System.Text.Json.Serialization;
 using Kiogloss.Api.Compat;
 
@@ -15,8 +21,8 @@ public sealed class TokenResponse(string access, string refresh)
 
 public sealed class LoginRequest
 {
-    [Email, NotBlank] [JsonPropertyName("email")] public string? Email { get; set; }
-    [NotBlank] [JsonPropertyName("password")] public string? Password { get; set; }
+    [Email, NotBlank][JsonPropertyName("email")] public string? Email { get; set; }
+    [NotBlank][JsonPropertyName("password")] public string? Password { get; set; }
 }
 
 public sealed class RefreshTokenRequest
@@ -63,14 +69,14 @@ public sealed class AddressDTO
 
 public sealed class UserCreateRequest
 {
-    [Email, NotBlank] [JsonPropertyName("email")] public string? Email { get; set; }
-    [NotBlank] [JsonPropertyName("name")] public string? Name { get; set; }
-    [NotBlank] [JsonPropertyName("password")] public string? Password { get; set; }
+    [Email, NotBlank][JsonPropertyName("email")] public string? Email { get; set; }
+    [NotBlank][JsonPropertyName("name")] public string? Name { get; set; }
+    [NotBlank][JsonPropertyName("password")] public string? Password { get; set; }
     /// <summary>Base64</summary>
     [JsonPropertyName("profileImage")] public string? ProfileImage { get; set; }
     [JsonPropertyName("phoneNumber")] public string? PhoneNumber { get; set; }
     [JsonPropertyName("account")] public AccountDTO? Account { get; set; }
-    [NotNull] [JsonPropertyName("address")] public AddressDTO? Address { get; set; }
+    [NotNull][JsonPropertyName("address")] public AddressDTO? Address { get; set; }
     [JsonPropertyName("isSuperuser")] public bool? IsSuperuser { get; set; } = false;
 }
 
@@ -153,8 +159,8 @@ public sealed class AuthorityJson(string authority)
 
 public sealed class FavoriteCreateRequest
 {
-    [NotNull] [JsonPropertyName("account")] public long? Account { get; set; }
-    [NotNull] [JsonPropertyName("product")] public long? Product { get; set; }
+    [NotNull][JsonPropertyName("account")] public long? Account { get; set; }
+    [NotNull][JsonPropertyName("product")] public long? Product { get; set; }
 }
 
 public sealed class FavoriteIdDTO(long id, long product)
@@ -286,9 +292,9 @@ public sealed class VideoReelDTO
 public sealed class VideoCreateRequest
 {
     [JsonPropertyName("videoUrl")] public string? VideoUrl { get; set; }
-    [NotBlank] [JsonPropertyName("thumbnailUrl")] public string? ThumbnailUrl { get; set; }
-    [NotBlank] [JsonPropertyName("username")] public string? Username { get; set; }
-    [NotNull] [JsonPropertyName("productId")] public long? ProductId { get; set; }
+    [NotBlank][JsonPropertyName("thumbnailUrl")] public string? ThumbnailUrl { get; set; }
+    [NotBlank][JsonPropertyName("username")] public string? Username { get; set; }
+    [NotNull][JsonPropertyName("productId")] public long? ProductId { get; set; }
 }
 
 public sealed class VideoUpdateRequest
@@ -318,17 +324,17 @@ public sealed class NotificationDTO
 public sealed class DetailProductRequest
 {
     /// <summary>Despite the name, this is a ProductVariant id.</summary>
-    [NotNull] [JsonPropertyName("product")] public long? Product { get; set; }
-    [NotNull] [JsonPropertyName("quantity")] public int? Quantity { get; set; }
-    [NotNull] [JsonPropertyName("price")] public double? Price { get; set; }
+    [NotNull][JsonPropertyName("product")] public long? Product { get; set; }
+    [NotNull][JsonPropertyName("quantity")] public int? Quantity { get; set; }
+    [NotNull][JsonPropertyName("price")] public double? Price { get; set; }
 }
 
 public sealed class OrderCreateRequest
 {
-    [NotNull] [JsonPropertyName("account")] public long? Account { get; set; }
-    [NotNull] [JsonPropertyName("shopping")] public List<DetailProductRequest?>? Shopping { get; set; }
-    [NotNull] [JsonPropertyName("amount")] public double? Amount { get; set; }
-    [NotNull] [JsonPropertyName("status")] public string? Status { get; set; }
+    [NotNull][JsonPropertyName("account")] public long? Account { get; set; }
+    [NotNull][JsonPropertyName("shopping")] public List<DetailProductRequest?>? Shopping { get; set; }
+    [NotNull][JsonPropertyName("amount")] public double? Amount { get; set; }
+    [NotNull][JsonPropertyName("status")] public string? Status { get; set; }
     /// <summary>Dirección de entrega; si viene vacía se usa la dirección del perfil.</summary>
     [JsonPropertyName("shippingAddress")] public string? ShippingAddress { get; set; }
 }

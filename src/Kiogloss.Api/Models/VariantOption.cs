@@ -1,6 +1,6 @@
 namespace Kiogloss.Api.Models;
 
-/// <summary>store_variant_option.</summary>
+/// <summary>Una opción posible (ej. "Rojo" dentro de "Color"). Tabla: store_variant_option.</summary>
 public class VariantOption
 {
     public long Id { get; set; }

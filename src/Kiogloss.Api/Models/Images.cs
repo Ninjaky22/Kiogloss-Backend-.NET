@@ -2,7 +2,7 @@ using Kiogloss.Api.Compat;
 
 namespace Kiogloss.Api.Models;
 
-/// <summary>store_images.</summary>
+/// <summary>Imagen asociada a un producto. Tabla: store_images.</summary>
 public class Images
 {
     public long Id { get; set; }

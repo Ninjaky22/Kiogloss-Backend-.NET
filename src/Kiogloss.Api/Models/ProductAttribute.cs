@@ -1,6 +1,6 @@
 namespace Kiogloss.Api.Models;
 
-/// <summary>Row of store_product_attributes (Product.attributes map entry).</summary>
+/// <summary>Característica libre de un producto (nombre/valor). Tabla: store_product_attributes.</summary>
 public class ProductAttribute
 {
     public long ProductId { get; set; }

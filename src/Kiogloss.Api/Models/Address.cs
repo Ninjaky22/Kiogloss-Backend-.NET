@@ -2,7 +2,7 @@ using Kiogloss.Api.Compat;
 
 namespace Kiogloss.Api.Models;
 
-/// <summary>store_address.</summary>
+/// <summary>Dirección postal (calle, número, distrito, ciudad). Tabla: store_address.</summary>
 public class Address
 {
     public long Id { get; set; }

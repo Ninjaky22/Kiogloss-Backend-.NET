@@ -1,6 +1,6 @@
 namespace Kiogloss.Api.Models;
 
-/// <summary>store_video_reel.</summary>
+/// <summary>Video publicado en la tienda (reel). Tabla: store_video_reel.</summary>
 public class VideoReel
 {
     public long Id { get; set; }

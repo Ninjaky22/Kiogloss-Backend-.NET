@@ -1,3 +1,7 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Conexión con cosas de afuera: Cloudinary (donde se guardan las imágenes), la carpeta de archivos y el envío de correos.
+// ======================================
+
 using System.Text;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
@@ -10,7 +14,7 @@ using MimeKit;
 
 namespace Kiogloss.Api.Services;
 
-/// <summary>Port of com.todoteg.service.CloudinaryService.</summary>
+/// <summary>Sube imágenes a Cloudinary (un servicio externo para guardar imágenes) y obtiene su dirección web.</summary>
 public class CloudinaryService(IOptions<CloudinaryOptions> options)
 {
     private readonly CloudinaryOptions _options = options.Value;
@@ -80,7 +84,7 @@ public class CloudinaryService(IOptions<CloudinaryOptions> options)
     }
 }
 
-/// <summary>Port of com.todoteg.service.FileStorageService (local uploads/ folder).</summary>
+/// <summary>Guarda los archivos subidos (por ejemplo videos) en la carpeta uploads/, que se puede ver en la ruta /uploads.</summary>
 public sealed class FileStorageService
 {
     private readonly string _uploadDir;
@@ -98,8 +102,10 @@ public sealed class FileStorageService
         }
     }
 
+    /// <summary>Directorio local donde se almacenan los archivos subidos.</summary>
     public string UploadDir => _uploadDir;
 
+    /// <summary>Guarda el archivo en el directorio de subidas con un nombre UUID y devuelve ese nombre.</summary>
     public async Task<string> Store(IFormFile file)
     {
         var originalName = file.FileName;
@@ -120,6 +126,7 @@ public sealed class FileStorageService
         return filename;
     }
 
+    /// <summary>Elimina el archivo si <paramref name="url"/> apunta a una subida local; ignora URLs vacías o externas.</summary>
     public void DeleteIfLocal(string? url)
     {
         if (string.IsNullOrWhiteSpace(url)) return;
@@ -138,9 +145,10 @@ public sealed class FileStorageService
     }
 }
 
-/// <summary>Port of com.todoteg.service.EmailService (Gmail SMTP).</summary>
+/// <summary>Envía correos electrónicos (por ahora, el enlace para recuperar la contraseña).</summary>
 public class EmailService(IOptions<MailOptions> mailOptions, IOptions<AppOptions> appOptions, ILogger<EmailService> log)
 {
+    /// <summary>Envía el correo con el enlace para restablecer la contraseña.</summary>
     public virtual async Task SendPasswordResetEmail(string toEmail, string userName, string token)
     {
         var mail = mailOptions.Value;

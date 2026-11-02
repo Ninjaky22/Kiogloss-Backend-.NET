@@ -1,6 +1,6 @@
 namespace Kiogloss.Api.Models;
 
-/// <summary>store_detail_order.</summary>
+/// <summary>Una línea de un pedido: qué producto, cuántas unidades y a qué precio. Tabla: store_detail_order.</summary>
 public class DetailOrder
 {
     public long Id { get; set; }

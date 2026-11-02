@@ -1,3 +1,7 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Páginas de resultados: en vez de enviar 1.000 elementos juntos, se envían de a pocos (página 1, 2, 3...).
+// ======================================
+
 using System.Linq.Expressions;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;

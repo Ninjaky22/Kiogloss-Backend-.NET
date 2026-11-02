@@ -1,6 +1,6 @@
 namespace Kiogloss.Api.Models;
 
-/// <summary>store_order.</summary>
+/// <summary>Pedido de un cliente: monto, fecha, estado y dirección de envío. Tabla: store_order.</summary>
 public class Order
 {
     public long Id { get; set; }

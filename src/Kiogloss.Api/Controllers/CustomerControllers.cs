@@ -1,3 +1,7 @@
+// ===== GUÍA RÁPIDA DE ESTE ARCHIVO =====
+// Direcciones (rutas) del cliente con sesión iniciada: pedidos, carrito y notificaciones.
+// ======================================
+
 using System.Globalization;
 using System.Text.Json;
 using Kiogloss.Api.Compat;
@@ -11,7 +15,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Kiogloss.Api.Controllers;
 
-/// <summary>Port of com.todoteg.controller.OrderController.</summary>
+/// <summary>Pedidos del cliente: hacer un pedido (POST /user/order) y ver los que ya hizo (GET /user/orders).</summary>
 [Route("user")]
 [OrderControllerExceptionHandler]
 public sealed class OrderController(OrderService orderService) : JavaControllerBase
@@ -71,12 +75,14 @@ public sealed class OrderController(OrderService orderService) : JavaControllerB
     }
 }
 
-/// <summary>Port of com.todoteg.controller.CartController (the logic lived in the controller in Java too).</summary>
+/// <summary>Carrito del cliente (/user/cart): ver, agregar, cambiar la cantidad, quitar y vaciar.
+/// Excepción: aquí las reglas están dentro del mismo controlador (así venía del sistema anterior).</summary>
 [Route("user/cart")]
 public sealed class CartController(KioglossDbContext db) : JavaControllerBase
 {
     private static readonly string[] ItemKeys = ["id", "productId", "variantId", "name", "price", "slug", "quantity", "variantDetails", "stock", "image"];
 
+    /// <summary>GET /user/cart - Devuelve el carrito del usuario autenticado.</summary>
     [HttpGet("")]
     public async Task<IActionResult> GetCart()
     {
@@ -134,6 +140,7 @@ public sealed class CartController(KioglossDbContext db) : JavaControllerBase
         return Json(response);
     }
 
+    /// <summary>POST /user/cart - Agrega una variante al carrito.</summary>
     [HttpPost("")]
     public async Task<IActionResult> AddToCart()
     {
@@ -162,6 +169,7 @@ public sealed class CartController(KioglossDbContext db) : JavaControllerBase
         return EmptyStatus(200);
     }
 
+    /// <summary>PUT /user/cart/{id} - Cambia la cantidad de un ítem del carrito.</summary>
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateQuantity(string id)
     {
@@ -173,6 +181,7 @@ public sealed class CartController(KioglossDbContext db) : JavaControllerBase
         return EmptyStatus(200);
     }
 
+    /// <summary>DELETE /user/cart/{id} - Quita un ítem del carrito.</summary>
     [HttpDelete("{id}")]
     public async Task<IActionResult> RemoveItem(string id)
     {
@@ -186,6 +195,7 @@ public sealed class CartController(KioglossDbContext db) : JavaControllerBase
         return EmptyStatus(200);
     }
 
+    /// <summary>DELETE /user/cart - Vacía el carrito.</summary>
     [HttpDelete("")]
     public async Task<IActionResult> ClearCart()
     {
@@ -225,46 +235,59 @@ public sealed class CartController(KioglossDbContext db) : JavaControllerBase
             : throw Compat.IllegalArgumentException.NumberFormat(text);
 }
 
-/// <summary>Port of com.todoteg.controller.NotificationController (user and admin variants).</summary>
+/// <summary>Notificaciones: ver la lista, contar las no leídas, marcar como leída, borrar y recibirlas en vivo (/stream).
+/// Hay una versión para clientes (/user/) y otra para administradores (/admin/), que funcionan igual.</summary>
 public sealed class NotificationController(NotificationService notificationService) : JavaControllerBase
 {
     // ==================== USUARIO ====================
 
+    /// <summary>GET /user/notifications/stream - Canal SSE de notificaciones del cliente.</summary>
     [HttpGet("user/notifications/stream")]
     public Task StreamUser() => Stream();
 
+    /// <summary>GET /user/notifications - Lista paginada de notificaciones del cliente.</summary>
     [HttpGet("user/notifications")]
     public Task<IActionResult> ListUser() => List();
 
+    /// <summary>GET /user/notifications/unread-count - Cantidad de notificaciones sin leer del cliente.</summary>
     [HttpGet("user/notifications/unread-count")]
     public Task<IActionResult> UnreadCountUser() => UnreadCount();
 
+    /// <summary>PATCH /user/notifications/{id}/read - Marca una notificación del cliente como leída.</summary>
     [HttpPatch("user/notifications/{id}/read")]
     public Task<IActionResult> MarkReadUser(string id) => MarkRead(id);
 
+    /// <summary>PATCH /user/notifications/read-all - Marca todas las notificaciones del cliente como leídas.</summary>
     [HttpPatch("user/notifications/read-all")]
     public Task<IActionResult> MarkAllReadUser() => MarkAllRead();
 
+    /// <summary>DELETE /user/notifications/{id} - Elimina una notificación del cliente.</summary>
     [HttpDelete("user/notifications/{id}")]
     public Task<IActionResult> DeleteUser(string id) => Delete(id);
 
     // ==================== ADMIN ====================
 
+    /// <summary>GET /admin/notifications/stream - Canal SSE de notificaciones del administrador.</summary>
     [HttpGet("admin/notifications/stream")]
     public Task StreamAdmin() => Stream();
 
+    /// <summary>GET /admin/notifications - Lista paginada de notificaciones del administrador.</summary>
     [HttpGet("admin/notifications")]
     public Task<IActionResult> ListAdmin() => List();
 
+    /// <summary>GET /admin/notifications/unread-count - Cantidad de notificaciones sin leer del administrador.</summary>
     [HttpGet("admin/notifications/unread-count")]
     public Task<IActionResult> UnreadCountAdmin() => UnreadCount();
 
+    /// <summary>PATCH /admin/notifications/{id}/read - Marca una notificación del administrador como leída.</summary>
     [HttpPatch("admin/notifications/{id}/read")]
     public Task<IActionResult> MarkReadAdmin(string id) => MarkRead(id);
 
+    /// <summary>PATCH /admin/notifications/read-all - Marca todas las notificaciones del administrador como leídas.</summary>
     [HttpPatch("admin/notifications/read-all")]
     public Task<IActionResult> MarkAllReadAdmin() => MarkAllRead();
 
+    /// <summary>DELETE /admin/notifications/{id} - Elimina una notificación del administrador.</summary>
     [HttpDelete("admin/notifications/{id}")]
     public Task<IActionResult> DeleteAdmin(string id) => Delete(id);
 
