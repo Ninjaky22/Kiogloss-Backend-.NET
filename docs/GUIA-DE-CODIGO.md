@@ -13,13 +13,13 @@ Frontend ──petición──▶ [Revisiones de seguridad] ──▶ Controlado
 Frontend ◀──JSON────────────────────────────────── Controlador ◀── Servicio
 ```
 
-| Capa | Pregunta que responde | Carpeta |
-|---|---|---|
-| Revisiones de seguridad | ¿Quién eres? ¿Puedes entrar? ¿Hubo un error? | `Compat/Middleware.cs`, `Security/` |
-| Controlador | ¿Qué dirección se pidió y con qué datos? | `Controllers/` |
-| Servicio | ¿Qué reglas del negocio hay que aplicar? | `Services/` |
-| Modelo | ¿Cómo es cada tabla de la base de datos? (una clase por tabla) | `Models/`, `Data/` |
-| Formatos de datos (DTO) | ¿Qué campos entran y salen por la API? | `Dtos/` |
+| Capa                    | Pregunta que responde                                          | Carpeta                             |
+| ----------------------- | -------------------------------------------------------------- | ----------------------------------- |
+| Revisiones de seguridad | ¿Quién eres? ¿Puedes entrar? ¿Hubo un error?                   | `Compat/Middleware.cs`, `Security/` |
+| Controlador             | ¿Qué dirección se pidió y con qué datos?                       | `Controllers/`                      |
+| Servicio                | ¿Qué reglas del negocio hay que aplicar?                       | `Services/`                         |
+| Modelo                  | ¿Cómo es cada tabla de la base de datos? (una clase por tabla) | `Models/`, `Data/`                  |
+| Formatos de datos (DTO) | ¿Qué campos entran y salen por la API?                         | `Dtos/`                             |
 
 **Regla de oro:** el controlador NO decide nada, solo recibe y devuelve. Las reglas del negocio van en el servicio.
 
@@ -27,21 +27,21 @@ Frontend ◀──JSON───────────────────�
 
 Todo está en `src/Kiogloss.Api/`.
 
-| Carpeta / archivo | Qué contiene | Tócalo cuando… |
-|---|---|---|
-| `Program.cs` | Encendido del servidor, piezas del sistema y orden de las revisiones | sumas una pieza nueva o cambias el orden de las revisiones |
-| `Controllers/` | Las rutas (endpoints) | agregas o cambias una ruta |
-| `Services/` | Reglas del negocio | cambias cómo funciona algo (stock, pedidos, favoritos…) |
-| `Models/` | Una clase por tabla de la base de datos | agregas una columna o tabla |
-| `Data/KioglossDbContext.cs` | Conexión con la base de datos y lista de tablas | agregas una tabla nueva |
-| `Dtos/` | Formatos de los datos que entran y salen | una pantalla necesita un campo nuevo |
-| `Mappers/` | Transforman los datos de la base al formato de la respuesta | cambias cómo se arma una respuesta del admin |
-| `Security/` | Contraseñas, llaves de sesión (tokens) y permisos por ruta | cambias quién puede entrar a qué |
-| `Configuration/Options.cs` | Lista de ajustes disponibles | agregas un ajuste nuevo |
-| `Background/` | Tareas automáticas (latido, datos iniciales) | cambias tareas que corren solas |
-| `Compat/` | Compatibilidad con el sistema anterior (Java): errores, formato de datos, páginas, validación | **casi nunca**; ver aviso abajo |
-| `../../db/schema.sql` | Esquema de la base de datos | montas una base nueva |
-| `../../tests/` | Pruebas automáticas | cambias el comportamiento de un endpoint |
+| Carpeta / archivo           | Qué contiene                                                                                  | Tócalo cuando…                                             |
+| --------------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `Program.cs`                | Encendido del servidor, piezas del sistema y orden de las revisiones                          | sumas una pieza nueva o cambias el orden de las revisiones |
+| `Controllers/`              | Las rutas (endpoints)                                                                         | agregas o cambias una ruta                                 |
+| `Services/`                 | Reglas del negocio                                                                            | cambias cómo funciona algo (stock, pedidos, favoritos…)    |
+| `Models/`                   | Una clase por tabla de la base de datos                                                       | agregas una columna o tabla                                |
+| `Data/KioglossDbContext.cs` | Conexión con la base de datos y lista de tablas                                               | agregas una tabla nueva                                    |
+| `Dtos/`                     | Formatos de los datos que entran y salen                                                      | una pantalla necesita un campo nuevo                       |
+| `Mappers/`                  | Transforman los datos de la base al formato de la respuesta                                   | cambias cómo se arma una respuesta del admin               |
+| `Security/`                 | Contraseñas, llaves de sesión (tokens) y permisos por ruta                                    | cambias quién puede entrar a qué                           |
+| `Configuration/Options.cs`  | Lista de ajustes disponibles                                                                  | agregas un ajuste nuevo                                    |
+| `Background/`               | Tareas automáticas (latido, datos iniciales)                                                  | cambias tareas que corren solas                            |
+| `Compat/`                   | Compatibilidad con el sistema anterior (Java): errores, formato de datos, páginas, validación | **casi nunca**; ver aviso abajo                            |
+| `../../db/schema.sql`       | Esquema de la base de datos                                                                   | montas una base nueva                                      |
+| `../../tests/`              | Pruebas automáticas                                                                           | cambias el comportamiento de un endpoint                   |
 
 > **Aviso sobre `Compat/`:** este backend es una migración de Java (Spring) a .NET y los frontends no se tocaron. Por eso hay código
 > que reproduce al detalle formatos, orden de listas y mensajes de error del backend viejo. Modificarlo puede romper los frontends.
@@ -56,82 +56,82 @@ Todas las rutas empiezan con `/API/V1.0` (ver `Server:ContextPath`). Ejemplo: `/
 - 🔴 **Admin**: requiere token de un administrador. Si no, responde 403 vacío.
 
 ### Autenticación — `Controllers/PublicControllers.cs` → `AuthController` → `Services/UserServices.cs`
-| Método | Ruta | Acceso | Qué hace |
-|---|---|---|---|
-| POST | `/login` | 🟢 | Email + contraseña → tokens |
-| POST | `/refresh` | 🟢 | Renueva el token de acceso |
-| POST | `/auth/forgot-password` | 🟢 | Envía correo con enlace de recuperación |
-| POST | `/auth/reset-password` | 🟢 | Cambia la contraseña con el token del correo |
+| Método | Ruta                    | Acceso | Qué hace                                     |
+| ------ | ----------------------- | ------ | -------------------------------------------- |
+| POST   | `/login`                | 🟢      | Email + contraseña → tokens                  |
+| POST   | `/refresh`              | 🟢      | Renueva el token de acceso                   |
+| POST   | `/auth/forgot-password` | 🟢      | Envía correo con enlace de recuperación      |
+| POST   | `/auth/reset-password`  | 🟢      | Cambia la contraseña con el token del correo |
 
 ### Catálogo público — `PublicControllers.cs` → `ProductController` → `Services/CatalogServices.cs`
-| Método | Ruta | Acceso | Qué hace |
-|---|---|---|---|
-| GET | `/products` | 🟢 | Lista de productos (filtros, orden, paginación) |
-| GET | `/article/{slug}` | 🟢 | Detalle de un producto |
-| GET | `/tags` | 🟢 | Etiquetas |
-| GET | `/videos` | 🟢 | Videos publicados |
+| Método | Ruta              | Acceso | Qué hace                                        |
+| ------ | ----------------- | ------ | ----------------------------------------------- |
+| GET    | `/products`       | 🟢      | Lista de productos (filtros, orden, paginación) |
+| GET    | `/article/{slug}` | 🟢      | Detalle de un producto                          |
+| GET    | `/tags`           | 🟢      | Etiquetas                                       |
+| GET    | `/videos`         | 🟢      | Videos publicados                               |
 
 ### Usuarios — `PublicControllers.cs` → `UserController` → `UserService`
-| Método | Ruta | Acceso | Qué hace |
-|---|---|---|---|
-| POST | `/user/` (con barra final) | 🟢 | Registrar un usuario nuevo |
-| GET | `/user/` (con barra final) | 🟢 según `PermitExact` (revisar si debería exigir token) | Listar usuarios |
-| GET | `/user/{pk}` | 🔵 | Detalle del usuario |
-| PATCH | `/user/update/{pk}` | 🔵 | Actualizar perfil |
+| Método | Ruta                       | Acceso                                                  | Qué hace                   |
+| ------ | -------------------------- | ------------------------------------------------------- | -------------------------- |
+| POST   | `/user/` (con barra final) | 🟢                                                       | Registrar un usuario nuevo |
+| GET    | `/user/` (con barra final) | 🟢 según `PermitExact` (revisar si debería exigir token) | Listar usuarios            |
+| GET    | `/user/{pk}`               | 🔵                                                       | Detalle del usuario        |
+| PATCH  | `/user/update/{pk}`        | 🔵                                                       | Actualizar perfil          |
 
 ### Favoritos — `PublicControllers.cs` → `FavoriteController` → `FavoriteService`
-| Método | Ruta | Acceso | Qué hace |
-|---|---|---|---|
-| POST | `/user/favorite` | 🔵 | Agregar favorito |
-| DELETE | `/user/delete/{pk}` | 🔵 | Quitar favorito |
-| GET | `/user/account/account_favorites/{id}` | 🔵 | Favoritos de una cuenta |
+| Método | Ruta                                   | Acceso | Qué hace                |
+| ------ | -------------------------------------- | ------ | ----------------------- |
+| POST   | `/user/favorite`                       | 🔵      | Agregar favorito        |
+| DELETE | `/user/delete/{pk}`                    | 🔵      | Quitar favorito         |
+| GET    | `/user/account/account_favorites/{id}` | 🔵      | Favoritos de una cuenta |
 
 ### Pedidos y carrito — `Controllers/CustomerControllers.cs`
-| Método | Ruta | Acceso | Qué hace |
-|---|---|---|---|
-| POST | `/user/order` | 🔵 | Crear pedido (descuenta stock) → `OrderService.CreateOrder` |
-| GET | `/user/orders` | 🔵 | Historial de pedidos del usuario |
-| GET | `/user/cart` | 🔵 | Ver carrito |
-| POST | `/user/cart` | 🔵 | Agregar al carrito |
-| PUT | `/user/cart/{id}` | 🔵 | Cambiar cantidad |
-| DELETE | `/user/cart/{id}` | 🔵 | Quitar un producto |
-| DELETE | `/user/cart` | 🔵 | Vaciar el carrito |
+| Método | Ruta              | Acceso | Qué hace                                                    |
+| ------ | ----------------- | ------ | ----------------------------------------------------------- |
+| POST   | `/user/order`     | 🔵      | Crear pedido (descuenta stock) → `OrderService.CreateOrder` |
+| GET    | `/user/orders`    | 🔵      | Historial de pedidos del usuario                            |
+| GET    | `/user/cart`      | 🔵      | Ver carrito                                                 |
+| POST   | `/user/cart`      | 🔵      | Agregar al carrito                                          |
+| PUT    | `/user/cart/{id}` | 🔵      | Cambiar cantidad                                            |
+| DELETE | `/user/cart/{id}` | 🔵      | Quitar un producto                                          |
+| DELETE | `/user/cart`      | 🔵      | Vaciar el carrito                                           |
 
 ### Notificaciones — `CustomerControllers.cs` → `NotificationController` → `NotificationService`
 Existen dos juegos idénticos: `/user/notifications…` (🔵) y `/admin/notifications…` (🔴).
-| Método | Sufijo | Qué hace |
-|---|---|---|
-| GET | `/stream` | Canal en vivo (SSE). El token va en `?token=` |
-| GET | `` (vacío) | Lista |
-| GET | `/unread-count` | Cantidad sin leer |
-| PATCH | `/{id}/read` | Marcar una como leída |
-| PATCH | `/read-all` | Marcar todas |
-| DELETE | `/{id}` | Borrar |
+| Método | Sufijo          | Qué hace                                      |
+| ------ | --------------- | --------------------------------------------- |
+| GET    | `/stream`       | Canal en vivo (SSE). El token va en `?token=` |
+| GET    | `` (vacío)      | Lista                                         |
+| GET    | `/unread-count` | Cantidad sin leer                             |
+| PATCH  | `/{id}/read`    | Marcar una como leída                         |
+| PATCH  | `/read-all`     | Marcar todas                                  |
+| DELETE | `/{id}`         | Borrar                                        |
 
 ### Panel admin — `Controllers/AdminControllers.cs` → `AdminController` → `Services/AdminService.cs` (todas 🔴)
-| Recurso | Rutas (bajo `/admin`) |
-|---|---|
-| Archivos | `POST /upload` |
-| Productos | `GET/POST /products`, `GET/PUT/DELETE /products/{id}`, `POST /products/images`, `DELETE /products/images/{id}` |
-| Etiquetas | `GET/POST /tags`, `PUT/DELETE /tags/{id}` |
-| Tipos de variante | `GET/POST /variants/types`, `PUT/DELETE /variants/types/{id}` |
-| Usuarios | `GET /users`, `GET /users/{id}`, `PUT /users/{id}/roles`, `PATCH /users/{id}/toggle-status` |
-| Pedidos | `GET /orders`, `GET /orders/{id}`, `GET /users/{userId}/orders`, `PATCH /orders/{id}/status` |
-| Estadísticas | `GET /stats` |
-| Videos | `GET/POST /videos`, `PUT/DELETE /videos/{id}` |
-| Reportes (`ReportController`) | `GET /admin/reports/summary`, `/sales-by-day`, `/top-products`, `/orders-by-status` |
+| Recurso                       | Rutas (bajo `/admin`)                                                                                          |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Archivos                      | `POST /upload`                                                                                                 |
+| Productos                     | `GET/POST /products`, `GET/PUT/DELETE /products/{id}`, `POST /products/images`, `DELETE /products/images/{id}` |
+| Etiquetas                     | `GET/POST /tags`, `PUT/DELETE /tags/{id}`                                                                      |
+| Tipos de variante             | `GET/POST /variants/types`, `PUT/DELETE /variants/types/{id}`                                                  |
+| Usuarios                      | `GET /users`, `GET /users/{id}`, `PUT /users/{id}/roles`, `PATCH /users/{id}/toggle-status`                    |
+| Pedidos                       | `GET /orders`, `GET /orders/{id}`, `GET /users/{userId}/orders`, `PATCH /orders/{id}/status`                   |
+| Estadísticas                  | `GET /stats`                                                                                                   |
+| Videos                        | `GET/POST /videos`, `PUT/DELETE /videos/{id}`                                                                  |
+| Reportes (`ReportController`) | `GET /admin/reports/summary`, `/sales-by-day`, `/top-products`, `/orders-by-status`                            |
 
 ## 4. Recetas: "quiero hacer X, ¿dónde voy?"
 
-| Quiero… | Pasos |
-|---|---|
-| **Agregar una ruta nueva** | 1) Método con `[HttpGet("...")]` (o Post/Put/Delete/Patch) en el controlador. 2) Si es pública, agrégala a `PermitExact`/`PermitPrefixes` en `Security/Auth.cs`. 3) La lógica va en un servicio. |
-| **Cambiar una regla de negocio** | Busca el método en `Services/` (la tabla de rutas te dice cuál). |
-| **Agregar un campo a un producto/usuario** | 1) Columna en la base. 2) Propiedad en `Models/`. 3) Mapeo en `Data/KioglossDbContext.cs`. 4) Campo en el DTO. |
-| **Cambiar un mensaje de error** | Donde se lanza (`throw …` en el servicio). Ojo: los frontends muestran estos textos. |
-| **Cambiar quién accede a una ruta** | `Security/Auth.cs` → `UrlAuthorizationMiddleware`. |
-| **Cambiar un ajuste (secretos, correo, umbral de stock)** | `appsettings.Local.json` o variables de entorno (ver `README.md`). Nunca en el código. |
-| **Entender un error 500** | Lee el mensaje de la respuesta: casi siempre dice qué falló. Lo arma `GlobalExceptionMiddleware` (en `Compat/Middleware.cs`). |
+| Quiero…                                                   | Pasos                                                                                                                                                                                            |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Agregar una ruta nueva**                                | 1) Método con `[HttpGet("...")]` (o Post/Put/Delete/Patch) en el controlador. 2) Si es pública, agrégala a `PermitExact`/`PermitPrefixes` en `Security/Auth.cs`. 3) La lógica va en un servicio. |
+| **Cambiar una regla de negocio**                          | Busca el método en `Services/` (la tabla de rutas te dice cuál).                                                                                                                                 |
+| **Agregar un campo a un producto/usuario**                | 1) Columna en la base. 2) Propiedad en `Models/`. 3) Mapeo en `Data/KioglossDbContext.cs`. 4) Campo en el DTO.                                                                                   |
+| **Cambiar un mensaje de error**                           | Donde se lanza (`throw …` en el servicio). Ojo: los frontends muestran estos textos.                                                                                                             |
+| **Cambiar quién accede a una ruta**                       | `Security/Auth.cs` → `UrlAuthorizationMiddleware`.                                                                                                                                               |
+| **Cambiar un ajuste (secretos, correo, umbral de stock)** | `appsettings.Local.json` o variables de entorno (ver `README.md`). Nunca en el código.                                                                                                           |
+| **Entender un error 500**                                 | Lee el mensaje de la respuesta: casi siempre dice qué falló. Lo arma `GlobalExceptionMiddleware` (en `Compat/Middleware.cs`).                                                                    |
 
 ## 5. Buenas prácticas que se siguen (y conviene mantener)
 

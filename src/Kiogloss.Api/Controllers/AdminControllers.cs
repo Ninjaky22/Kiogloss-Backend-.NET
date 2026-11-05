@@ -329,7 +329,11 @@ public sealed class ReportController(ReportService reportService) : JavaControll
 
     /// <summary>Productos más vendidos por cantidad (por defecto el top 5).</summary>
     [HttpGet("top-products")]
-    public async Task<IActionResult> GetTopProducts() => Json(await reportService.GetTopProducts(IntParam("limit", 5)));
+    public async Task<IActionResult> GetTopProducts() => Json(await reportService.GetTopProducts(IntParam("limit", 5), IntParam("days", 0)));
+
+    /// <summary>Detalle del periodo: KPIs, comparación con el periodo previo, desglose por estado y mejores clientes.</summary>
+    [HttpGet("period-detail")]
+    public async Task<IActionResult> GetPeriodDetail() => Json(await reportService.GetPeriodDetail(IntParam("days", 30)));
 
     /// <summary>Distribución de órdenes por estado para la gráfica Donut.</summary>
     [HttpGet("orders-by-status")]

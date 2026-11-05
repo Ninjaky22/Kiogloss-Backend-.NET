@@ -321,10 +321,16 @@ public sealed class ReportService(KioglossDbContext db)
     }
 
     /// <summary>Top N productos más vendidos por cantidad.</summary>
-    public async Task<List<TopProductDTO>> GetTopProducts(int limit)
+    public async Task<List<TopProductDTO>> GetTopProducts(int limit, int days = 0)
     {
         var pageable = PageRequest.Of(0, limit);
-        return (await db.DetailOrders
+        var details = db.DetailOrders.AsQueryable();
+        if (days > 0)
+        {
+            var startDate = DateOnly.FromDateTime(DateTime.Now).AddDays(-days);
+            details = details.Where(d => d.Order.Date >= startDate);
+        }
+        return (await details
                 .GroupBy(d => new { d.Variant.Product.Id, d.Variant.Product.Title })
                 .Select(g => new
                 {
@@ -369,6 +375,71 @@ public sealed class ReportService(KioglossDbContext db)
         foreach (var item in list)
             item.Percentage = total > 0 ? JavaRound(item.Count * 100.0 / total * 100.0) / 100.0 : 0.0;
         return list;
+    }
+
+    /// <summary>Detalle de los últimos N días: KPIs, comparación con el periodo previo, desglose por estado y mejores clientes.</summary>
+    public async Task<PeriodDetailDTO> GetPeriodDetail(int days)
+    {
+        days = Math.Clamp(days, 1, 365);
+        var end = DateOnly.FromDateTime(DateTime.Now);
+        var start = end.AddDays(-days);
+        var prevStart = start.AddDays(-days);
+
+        var orders = await db.Orders.AsNoTracking()
+            .Where(o => o.Date >= prevStart)
+            .Select(o => new { o.Id, o.AccountId, o.Date, o.Amount, o.Status })
+            .ToListAsync();
+        var current = orders.Where(o => o.Date >= start).ToList();
+        var previous = orders.Where(o => o.Date < start).ToList();
+
+        var valid = current.Where(o => o.Status != OrderStatus.CANCELLED).ToList();
+        var gross = current.Sum(o => o.Amount);
+        var cancelled = current.Where(o => o.Status == OrderStatus.CANCELLED).ToList();
+        var cancelledAmount = cancelled.Sum(o => o.Amount);
+        var net = gross - cancelledAmount;
+        var prevNet = previous.Where(o => o.Status != OrderStatus.CANCELLED).Sum(o => o.Amount);
+
+        var validIds = valid.Select(o => o.Id).ToList();
+        var unitsSold = validIds.Count == 0 ? 0L
+            : await db.DetailOrders.Where(d => validIds.Contains(d.OrderId)).SumAsync(d => (long?)d.Quantity) ?? 0L;
+
+        var bestDay = valid.GroupBy(o => o.Date)
+            .Select(g => new SalesByDayDTO(g.Key, g.Sum(o => o.Amount), g.LongCount()))
+            .OrderByDescending(x => x.TotalAmount).FirstOrDefault();
+
+        var breakdown = current.GroupBy(o => o.Status)
+            .Select(g => new StatusBreakdownDTO(g.Key.ToString(), g.LongCount(), g.Sum(o => o.Amount),
+                Math.Round(g.Count() * 100.0 / current.Count, 2)))
+            .OrderByDescending(x => x.Count).ToList();
+
+        var topRaw = valid.GroupBy(o => o.AccountId)
+            .Select(g => new { AccountId = g.Key, Orders = g.LongCount(), Total = g.Sum(o => o.Amount) })
+            .OrderByDescending(x => x.Total).Take(5).ToList();
+        var accountIds = topRaw.Select(x => x.AccountId).ToList();
+        var users = await db.Accounts.AsNoTracking().Where(a => accountIds.Contains(a.Id))
+            .Select(a => new { a.Id, a.User.Name, a.User.Email }).ToListAsync();
+        var topCustomers = topRaw.Select(x =>
+        {
+            var u = users.FirstOrDefault(a => a.Id == x.AccountId);
+            return new TopCustomerDTO(x.AccountId, u?.Name ?? "Cliente", u?.Email ?? "", x.Orders, x.Total);
+        }).ToList();
+
+        static double? Trend(double now, double before) => before > 0 ? Math.Round((now - before) / before * 100.0, 1) : null;
+
+        return new PeriodDetailDTO
+        {
+            Days = days, StartDate = start, EndDate = end,
+            GrossRevenue = gross, CancelledAmount = cancelledAmount, NetRevenue = net,
+            TotalOrders = current.Count, CancelledOrders = cancelled.Count,
+            CancellationRate = current.Count > 0 ? Math.Round(cancelled.Count * 100.0 / current.Count, 1) : 0.0,
+            UnitsSold = unitsSold,
+            AverageTicket = valid.Count > 0 ? net / valid.Count : 0.0,
+            UniqueCustomers = valid.Select(o => o.AccountId).Distinct().LongCount(),
+            BestDay = bestDay,
+            PreviousNetRevenue = prevNet, PreviousOrders = previous.Count,
+            RevenueTrend = Trend(net, prevNet), OrdersTrend = Trend(current.Count, previous.Count),
+            StatusBreakdown = breakdown, TopCustomers = topCustomers,
+        };
     }
 
     /// <summary>java.lang.Math#round(double) (half up), not .NET's banker's rounding.</summary>

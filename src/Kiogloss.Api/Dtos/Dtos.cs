@@ -402,3 +402,45 @@ public sealed class OrderStatusDistributionDTO(string status, long count)
     [JsonPropertyName("count")] public long Count { get; } = count;
     [JsonPropertyName("percentage")] public double? Percentage { get; set; }
 }
+
+public sealed class StatusBreakdownDTO(string status, long count, double totalAmount, double percentage)
+{
+    [JsonPropertyName("status")] public string Status { get; } = status;
+    [JsonPropertyName("count")] public long Count { get; } = count;
+    [JsonPropertyName("totalAmount")] public double TotalAmount { get; } = totalAmount;
+    [JsonPropertyName("percentage")] public double Percentage { get; } = percentage;
+}
+
+public sealed class TopCustomerDTO(long accountId, string name, string email, long orders, double totalSpent)
+{
+    [JsonPropertyName("accountId")] public long AccountId { get; } = accountId;
+    [JsonPropertyName("name")] public string Name { get; } = name;
+    [JsonPropertyName("email")] public string Email { get; } = email;
+    [JsonPropertyName("orders")] public long Orders { get; } = orders;
+    [JsonPropertyName("totalSpent")] public double TotalSpent { get; } = totalSpent;
+}
+
+/// <summary>Detalle del periodo: KPIs del rango, comparación con el periodo anterior, desglose por estado y mejores clientes.</summary>
+public sealed class PeriodDetailDTO
+{
+    [JsonPropertyName("days")] public int Days { get; init; }
+    [JsonPropertyName("startDate")] public DateOnly StartDate { get; init; }
+    [JsonPropertyName("endDate")] public DateOnly EndDate { get; init; }
+    [JsonPropertyName("grossRevenue")] public double GrossRevenue { get; init; }
+    [JsonPropertyName("cancelledAmount")] public double CancelledAmount { get; init; }
+    [JsonPropertyName("netRevenue")] public double NetRevenue { get; init; }
+    [JsonPropertyName("totalOrders")] public long TotalOrders { get; init; }
+    [JsonPropertyName("cancelledOrders")] public long CancelledOrders { get; init; }
+    [JsonPropertyName("cancellationRate")] public double CancellationRate { get; init; }
+    [JsonPropertyName("unitsSold")] public long UnitsSold { get; init; }
+    [JsonPropertyName("averageTicket")] public double AverageTicket { get; init; }
+    [JsonPropertyName("uniqueCustomers")] public long UniqueCustomers { get; init; }
+    [JsonPropertyName("bestDay")] public SalesByDayDTO? BestDay { get; init; }
+    [JsonPropertyName("previousNetRevenue")] public double PreviousNetRevenue { get; init; }
+    [JsonPropertyName("previousOrders")] public long PreviousOrders { get; init; }
+    /// <summary>Variación % vs. periodo anterior (null si no hay base de comparación).</summary>
+    [JsonPropertyName("revenueTrend")] public double? RevenueTrend { get; init; }
+    [JsonPropertyName("ordersTrend")] public double? OrdersTrend { get; init; }
+    [JsonPropertyName("statusBreakdown")] public List<StatusBreakdownDTO> StatusBreakdown { get; init; } = new();
+    [JsonPropertyName("topCustomers")] public List<TopCustomerDTO> TopCustomers { get; init; } = new();
+}
